@@ -2,7 +2,8 @@ Package: ggmanh
 Title: Visualization Tool for GWAS Result
 Version: 1.5.0
 Authors@R: c(
-        person(given = "John", family = "Lee", role = c("aut", "cre"), email = "john.lee@abbvie.com"),
+        person(given = "John", family = "Lee", role = c("aut", "cre"), email = "swannyy.stat@gmail.com"),
+        person(given = "John", family = "Lee", role = c("aut"), email = "john.lee@abbvie.com", comment = "AbbVie"),
         person(given = "Xiuwen", family = "Zheng", role = c("ctb", "dtc"), email = "xiuwen.zheng@abbvie.com")
     )
 Description: Manhattan plot and QQ Plot are commonly used to visualize the end result of Genome Wide Association Study.
