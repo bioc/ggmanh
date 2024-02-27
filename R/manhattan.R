@@ -254,7 +254,7 @@ setMethod(
       x, signif = signif, pval.colname = pval.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
       highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n
+      thin.n = thin.n, chromosome = chromosome, ...
     )
 
     # manhattan plot
