@@ -91,7 +91,7 @@ manhattan_data_preprocess.data.frame <- function(
   x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval",
   chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL, chr.order = NULL,
   signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-  thin.n = 1000
+  thin.n = 1000, ...
 ) {
 
   # what manhattan preprocess does:
@@ -207,7 +207,7 @@ setMethod(
   function(
     x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-    thin.n = 100
+    thin.n = 100, ...
   ) {
     grdat <- as.data.frame(x)
     grdat$pos <- (grdat$start + grdat$end) %/% 2
@@ -219,7 +219,7 @@ setMethod(
       grdat, chromosome = chromosome, signif = signif, pval.colname = pval.colname,
       chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = highlight.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n
+      thin.n = thin.n, ...
     )
   }
 )

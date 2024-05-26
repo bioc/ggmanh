@@ -25,7 +25,8 @@ manhattan_data_preprocess(x, ...)
   highlight.col = NULL,
   preserve.position = FALSE,
   thin = NULL,
-  thin.n = 1000
+  thin.n = 1000,
+  ...
 )
 
 \S4method{manhattan_data_preprocess}{GRanges}(
@@ -40,7 +41,8 @@ manhattan_data_preprocess(x, ...)
   highlight.col = NULL,
   preserve.position = FALSE,
   thin = NULL,
-  thin.n = 100
+  thin.n = 100,
+  ...
 )
 }
 \arguments{
