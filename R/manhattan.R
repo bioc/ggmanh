@@ -63,8 +63,8 @@ manhattan_plot.data.frame <- function(
   x, chromosome = NULL, outfn = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", chr.colname = "chr",
   pos.colname = "pos", label.colname = NULL, highlight.colname = NULL, chr.order = NULL,
   signif.col = NULL, chr.col = NULL,  highlight.col = NULL,
-  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.4, color.by.highlight = FALSE,
-  preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200,
+  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
+  preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
   x.label = "Chromosome", y.label = expression(-log[10](p)), ...
@@ -75,7 +75,7 @@ manhattan_plot.data.frame <- function(
     x, chromosome = chromosome, signif = signif, pval.colname = pval.colname, chr.colname = chr.colname, pos.colname = pos.colname,
     chr.order = chr.order, signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
     highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-    thin.n = thin.n, thin.bins = thin.bins
+    thin.n = thin.n, thin.bins = thin.bins, pval.log.transform = pval.log.transform
   )
 
   # manhattan plot
@@ -118,7 +118,7 @@ manhattan_plot.data.frame <- function(
 #' @export
 manhattan_plot.MPdata <- function(
   x, chromosome = NULL, outfn = NULL,
-  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.4, color.by.highlight = FALSE,
+  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
   label.colname = NULL, x.label = "Chromosome", y.label = expression(-log[10](p)),
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(),
@@ -242,8 +242,8 @@ setMethod(
     x, chromosome = NULL, outfn = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", label.colname = NULL,
     highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL,  highlight.col = NULL,
-    rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.4, color.by.highlight = FALSE,
-    preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200,
+    rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
+    preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE,
     plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
     point.size = 0.75, label.font.size = 2, max.overlaps = 20,
     x.label = "Chromosome", y.label = expression(-log[10](p)), ...
@@ -254,7 +254,7 @@ setMethod(
       x, signif = signif, pval.colname = pval.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
       highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n, thin.bins = thin.bins, chromosome = chromosome, ...
+      thin.n = thin.n, thin.bins = thin.bins, chromosome = chromosome, pval.log.transform = pval.log.transform,...
     )
 
     # manhattan plot

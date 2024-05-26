@@ -27,7 +27,7 @@ Reduce the number of cluttered data points.
 The result of Genome Wide Association Study can be very large, with the majority
 of points being being clustered below significance threshold. This unnecessarily increases the time
 to plot while making almost no difference. This function reduces the number of points by partitioning the points
-by a numberic column \code{value} into \code{nbins} and sampling \code{n} points.
+by a numeric column \code{value} into \code{nbins} and sampling \code{n} points.
 }
 \examples{
 dat <- data.frame(

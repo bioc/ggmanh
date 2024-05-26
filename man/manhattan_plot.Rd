@@ -33,6 +33,8 @@ manhattan_plot.default(x, ...)
   preserve.position = FALSE,
   thin = NULL,
   thin.n = 1000,
+  thin.bins = 200,
+  pval.log.transform = TRUE,
   plot.title = ggplot2::waiver(),
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
@@ -85,6 +87,8 @@ manhattan_plot.default(x, ...)
   preserve.position = FALSE,
   thin = NULL,
   thin.n = 1000,
+  thin.bins = 200,
+  pval.log.transform = TRUE,
   plot.title = ggplot2::waiver(),
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
@@ -159,6 +163,10 @@ width of each chromosome is equal and the variants are equally spaced.}
 
 \item{thin.n}{an integer. Number of max points per horizontal partitions of the plot.
 Defaults to 1000.}
+
+\item{thin.bins}{an integer. Number of bins to partition the data. Defaults to 200.}
+
+\item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
 
 \item{plot.title}{a character. Plot title}
 

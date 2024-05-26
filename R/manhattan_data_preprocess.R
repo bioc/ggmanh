@@ -86,13 +86,14 @@ manhattan_data_preprocess.default <- function(x, ...) stop("Provide a valid data
 #' @param thin.n an integer. Number of max points per horizontal partitions of the plot.
 #'   Defaults to 1000.
 #' @param thin.bins an integer. Number of bins to partition the data. Defaults to 200.
+#' @param pval.log.transform a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).
 #' @importFrom ggplot2 waiver
 #' @export
 manhattan_data_preprocess.data.frame <- function(
   x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval",
   chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL, chr.order = NULL,
   signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-  thin.n = 1000, thin.bins = 200, ...
+  thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE, ...
 ) {
 
   # what manhattan preprocess does:
@@ -105,13 +106,21 @@ manhattan_data_preprocess.data.frame <- function(
   preprocess_arg_check_out <- preprocess_arg_check(
     x = x, chromosome = chromosome, signif = signif, signif.col = signif.col,
     pval.colname = pval.colname, chr.colname = chr.colname,
-    pos.colname = pos.colname, preserve.position = preserve.position)
+    pos.colname = pos.colname, preserve.position = preserve.position, 
+    pval.log.transform = pval.log.transform
+  )
 
   thin <- set_thin_logical(thin, chromosome)
 
   # remove any results with missing chr, pos, or pval
   x <- remove_na(x, chr.colname, pos.colname, pval.colname)
-  x[[pval.colname]] <- replace_0_pval(x[[pval.colname]])
+  if (pval.log.transform) {
+    x[[pval.colname]] <- replace_0_pval(x[[pval.colname]])
+    
+    # -log10(pvalue)
+    x$log10pval <- -log10(x[[pval.colname]])
+    pval.colname <- "log10pval"
+  }
   signif.col <- preprocess_arg_check_out$signif.col
 
   # subset by chromosome if chromosome is specified
@@ -172,9 +181,6 @@ manhattan_data_preprocess.data.frame <- function(
   center_pos <- (start_pos + end_pos) / 2 # middle x-coordinate for each chr... used for x axis labelling
   x$new_pos <- new_pos + start_pos[as.character(x[[chr.colname]])]
 
-  # -log10(pvalue)
-  x$log10pval <- -log10(x[[pval.colname]])
-
   # thin data points if it set to true
   if (thin) {
     x <- thinPoints(dat = x, value = "log10pval", n = thin.n, nbins = thin.bins, groupBy = chr.colname)
@@ -195,7 +201,7 @@ manhattan_data_preprocess.data.frame <- function(
     chr.colname = chr.colname,
     pos.colname = "new_pos",
     true.pos.colname = pos.colname,
-    pval.colname = "log10pval"
+    pval.colname = pval.colname
   )
   class(mpdata) <- "MPdata"
 
@@ -210,7 +216,7 @@ setMethod(
   function(
     x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-    thin.n = 100, thin.bins = 200, ...
+    thin.n = 100, thin.bins = 200, pval.log.transform = TRUE, ...
   ) {
     grdat <- as.data.frame(x)
     grdat$pos <- (grdat$start + grdat$end) %/% 2

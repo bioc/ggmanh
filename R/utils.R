@@ -1,6 +1,7 @@
 # check preprocessing arguments
 preprocess_arg_check <- function(
-  x, chromosome, signif, signif.col, pval.colname, chr.colname, pos.colname, preserve.position
+  x, chromosome, signif, signif.col, pval.colname, chr.colname,
+  pos.colname, preserve.position, pval.log.transform
 ) {
   preprocess_checklist <- list(signif.col = signif.col)
   # check significance cutoff exists
@@ -45,14 +46,15 @@ preprocess_arg_check <- function(
   }
 
   # check that the values in p-value column are valid
-  if (any(x[[pval.colname]] < 0, na.rm = TRUE) | any(x[[pval.colname]] > 1, na.rm = TRUE)) stop("p.value is a probability between 0 and 1.")
+  if (pval.log.transform) {
+    if (any(x[[pval.colname]] < 0, na.rm = TRUE) | any(x[[pval.colname]] > 1, na.rm = TRUE)) {
+      stop("p.value is a probability between 0 and 1.")
+    }
+  }
 
   # check that column names are valid
   if (!is.numeric(x[[pval.colname]])) stop(pval.colname, " should be a numeric column.")
   if (!is.numeric(x[[pos.colname]])) stop(pos.colname, " should be a numeric column.")
-
-  # check that values in p value column are correct
-  if (any(x[[pval.colname]] < 0, na.rm = TRUE) | any(x[[pval.colname]] > 1, na.rm = TRUE)) stop("p.value is a probability between 0 and 1.")
 
   if (length(preserve.position) != 1 | !is.logical(preserve.position)) {
     stop("preserve.position should be TRUE or FALSE.")
@@ -255,7 +257,6 @@ concat_df_cols <- function(df, concat_char = "/") {
   }
 
   return(concat_list(as.list(df), concat_char))
-
 }
 
 # check that gds node exists
