@@ -64,7 +64,7 @@ manhattan_plot.data.frame <- function(
   pos.colname = "pos", label.colname = NULL, highlight.colname = NULL, chr.order = NULL,
   signif.col = NULL, chr.col = NULL,  highlight.col = NULL,
   rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.4, color.by.highlight = FALSE,
-  preserve.position = FALSE, thin = NULL, thin.n = 1000,
+  preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
   x.label = "Chromosome", y.label = expression(-log[10](p)), ...
@@ -75,7 +75,7 @@ manhattan_plot.data.frame <- function(
     x, chromosome = chromosome, signif = signif, pval.colname = pval.colname, chr.colname = chr.colname, pos.colname = pos.colname,
     chr.order = chr.order, signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
     highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-    thin.n = thin.n
+    thin.n = thin.n, thin.bins = thin.bins
   )
 
   # manhattan plot
@@ -173,7 +173,7 @@ manhattan_plot.MPdata <- function(
 
   # manhattan plot without labels
   p <- ggplot2::ggplot(x$data, ggplot2::aes(x = !!rlang::sym(pos), y = !!rlang::sym(x$pval.colname), color = !!rlang::sym(point.color))) +
-    ggplot2::geom_point(size = point.size, pch = 16) +
+    ggplot2::geom_point(size = point.size) +
     ggplot2::scale_discrete_manual(aesthetics = "color", values = point.color.map) +
     ggplot2::scale_y_continuous(
       trans = trans$trans,
@@ -243,7 +243,7 @@ setMethod(
     highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL,  highlight.col = NULL,
     rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.4, color.by.highlight = FALSE,
-    preserve.position = FALSE, thin = NULL, thin.n = 1000,
+    preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200,
     plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
     point.size = 0.75, label.font.size = 2, max.overlaps = 20,
     x.label = "Chromosome", y.label = expression(-log[10](p)), ...
@@ -254,7 +254,7 @@ setMethod(
       x, signif = signif, pval.colname = pval.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
       highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n, chromosome = chromosome, ...
+      thin.n = thin.n, thin.bins = thin.bins, chromosome = chromosome, ...
     )
 
     # manhattan plot

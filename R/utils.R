@@ -182,7 +182,6 @@ valid_colors <- function(clr) {
 
 # create spaced points of length(pos)
 sequence_along_chr_scaled <- function(pos) {
-  pos <- pos - min(pos)
   if (max(pos) != 0) {
     return(pos / max(pos))
   } else {
@@ -273,4 +272,10 @@ sample_vec <- function(x, n) {
   } else {
     return(sample(x, size = n, replace = FALSE))
   }
+}
+
+data_is_unsorted <- function(x, chr.colname, pos.colname) {
+  chr_unsorted <- is.unsorted(x[[chr.colname]])
+  pos_unsorted <- tapply(x[[pos.colname]], x[[chr.colname]], is.unsorted, default = FALSE)
+  return(chr_unsorted | any(pos_unsorted))
 }

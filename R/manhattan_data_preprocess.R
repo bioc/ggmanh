@@ -85,13 +85,14 @@ manhattan_data_preprocess.default <- function(x, ...) stop("Provide a valid data
 #'   \code{chromosome} is \code{NULL}. Defaults to \code{FALSE} if \code{chromosome} is supplied.
 #' @param thin.n an integer. Number of max points per horizontal partitions of the plot.
 #'   Defaults to 1000.
+#' @param thin.bins an integer. Number of bins to partition the data. Defaults to 200.
 #' @importFrom ggplot2 waiver
 #' @export
 manhattan_data_preprocess.data.frame <- function(
   x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval",
   chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL, chr.order = NULL,
   signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-  thin.n = 1000, ...
+  thin.n = 1000, thin.bins = 200, ...
 ) {
 
   # what manhattan preprocess does:
@@ -136,8 +137,10 @@ manhattan_data_preprocess.data.frame <- function(
   }
 
   # map each position in the chromosome to new positions
-  x <- x[order(x[[chr.colname]], x[[pos.colname]]), ]
-
+  if (data_is_unsorted(x, chr.colname, pos.colname)) {
+    x <- x[order(x[[chr.colname]], x[[pos.colname]]), ]
+  }
+  
   if (preserve.position) {
     # scale the width of chromosome proportional to number of points in chromosome
     # keep original positioning
@@ -174,7 +177,7 @@ manhattan_data_preprocess.data.frame <- function(
 
   # thin data points if it set to true
   if (thin) {
-    x <- thinPoints(dat = x, value = "log10pval", n = thin.n, nbins = 200, groupBy = chr.colname)
+    x <- thinPoints(dat = x, value = "log10pval", n = thin.n, nbins = thin.bins, groupBy = chr.colname)
   }
 
   # Create MPdata Class
@@ -207,7 +210,7 @@ setMethod(
   function(
     x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-    thin.n = 100, ...
+    thin.n = 100, thin.bins = 200, ...
   ) {
     grdat <- as.data.frame(x)
     grdat$pos <- (grdat$start + grdat$end) %/% 2
