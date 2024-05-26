@@ -26,6 +26,8 @@ manhattan_data_preprocess(x, ...)
   preserve.position = FALSE,
   thin = NULL,
   thin.n = 1000,
+  thin.bins = 200,
+  pval.log.transform = TRUE,
   ...
 )
 
@@ -42,6 +44,8 @@ manhattan_data_preprocess(x, ...)
   preserve.position = FALSE,
   thin = NULL,
   thin.n = 100,
+  thin.bins = 200,
+  pval.log.transform = TRUE,
   ...
 )
 }
@@ -90,6 +94,10 @@ width of each chromosome is equal and the variants are equally spaced.}
 
 \item{thin.n}{an integer. Number of max points per horizontal partitions of the plot.
 Defaults to 1000.}
+
+\item{thin.bins}{an integer. Number of bins to partition the data. Defaults to 200.}
+
+\item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
 }
 \value{
 a MPdata object. This object contains all the necessary info for constructing
