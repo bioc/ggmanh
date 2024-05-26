@@ -31,12 +31,14 @@
 #' # group by "B", partition "A2" into 2 bins and then sample 3 data points
 #' thinPoints(dat, value = "A2", n = 3, nbins = 2, groupBy = "B")
 #'
-thinPoints <- function(dat, value, n=3000, nbins=200, groupBy=NULL)
+thinPoints <- function(dat, value, n=1000, nbins=200, groupBy=NULL)
 {
   if (!(value %in% colnames(dat)) || !is.numeric(dat[[value]])) stop("value should be name of a numeric column.")
   if (!is.numeric(n) || !is.numeric(nbins)) stop("n and nbins should numbers.")
   if (!is.character(value) || (length(value) != 1)) stop("value should be a string.")
-
+  
+  group <- integer(nrow(dat))
+  
   if (!is.null(groupBy))
   {
     if (!is.character(groupBy) || (length(groupBy) != 1)) {
@@ -44,10 +46,12 @@ thinPoints <- function(dat, value, n=3000, nbins=200, groupBy=NULL)
     } else if (!(groupBy %in% colnames(dat))) {
       stop(sprintf("Column %s does not exist in dat.", groupBy))
     }
-    group <- integer(nrow(dat))
-    group[order(dat[[groupBy]])] <- unlist(tapply(dat[[value]], dat[[groupBy]], function(x) cut(x, breaks = nbins, labels = FALSE)))
+    if (nbins > 1) {
+      breaks <- seq(floor(min(dat[[value]])), ceiling(max(dat[[value]])), length.out = nbins+1)
+      group <- cut(dat[[value]], breaks = breaks, labels = FALSE, include.lowest = TRUE)
+    }
     group <- interaction(dat[[groupBy]], group)
-  } else {
+  } else if (nbins > 1) {
     group <- factor(cut(dat[[value]], breaks = nbins, labels = FALSE))
   }
 
