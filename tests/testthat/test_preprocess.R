@@ -39,7 +39,7 @@ test_that("Check that preprocess works as intended", {
   )
   lg <- 0.15 / 26 * 3 # gap between chromosomes - hard coded in manhattan_preprocess function
   expect_equal(mpdat1$data$new_pos, c(0, 1/2, 1, 1 + lg, 2 + lg, 2 + lg*2 + 1/2))
-  expect_equal(mpdat2$data$new_pos, c(0, 2/3 * 1.5, 1.5, 1.5 + lg, 2.5 + lg, 2.5 + lg*2))
+  expect_equal(mpdat2$data$new_pos, c(0.375, 1.125, 1.5, 0.4 + lg + 1.5, 1 + lg + 1.5, 0.5 + lg*2 + 2.5))
   expect_equal(mpdat1$data$pval, mpdat2$data$pval)
   expect_equal(mpdat1$data$pval, c(0.05,0.05,0.0005,0.000005,0.005,0.0005))
 })
@@ -65,4 +65,22 @@ test_that("Test that the thinPoint function subsets correctly.", {
   expect_equal(nrow(thinPoints(dat, value = "A", n = 3, nbins = 1, groupBy = "B")), 6)
   expect_equal(nrow(thinPoints(dat, value = "A", n = 3, nbins = 1)), 3)
   expect_equal(nrow(thinPoints(dat, value = "A", n = 3, nbins = 2, groupBy = "B")), 9)
+})
+
+test_that("Test that sort checking works correctly.", {
+  dat <- data.frame(
+    A1 = factor(c(rep("A", 3), rep("B", 4)), levels = c("A","B")),
+    A2 = factor(rep(c("A","B"), length.out = 7), levels = c("A","B")),
+    A3 = factor(rep("A",7), levels = c("A","B")),
+    B1 = 1:7,
+    B2 = c(1,2,3,6,4,5,7)
+  )
+  
+  expect_false(data_is_unsorted(dat, "A1", "B1"))
+  expect_false(data_is_unsorted(dat, "A3", "B1"))
+  
+  expect_true(data_is_unsorted(dat, "A2", "B1"))
+  expect_true(data_is_unsorted(dat, "A2", "B2"))
+  expect_true(data_is_unsorted(dat, "A1", "B2"))
+  expect_true(data_is_unsorted(dat, "A3", "B2"))
 })
