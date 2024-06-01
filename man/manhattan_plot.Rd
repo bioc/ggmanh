@@ -28,7 +28,7 @@ manhattan_plot.default(x, ...)
   highlight.col = NULL,
   rescale = TRUE,
   rescale.ratio.threshold = 5,
-  signif.rel.pos = 0.4,
+  signif.rel.pos = 0.2,
   color.by.highlight = FALSE,
   preserve.position = FALSE,
   thin = NULL,
@@ -51,9 +51,11 @@ manhattan_plot.default(x, ...)
   x,
   chromosome = NULL,
   outfn = NULL,
+  signif = NULL,
+  signif.col = NULL,
   rescale = TRUE,
   rescale.ratio.threshold = 5,
-  signif.rel.pos = 0.4,
+  signif.rel.pos = 0.2,
   color.by.highlight = FALSE,
   label.colname = NULL,
   x.label = "Chromosome",
@@ -82,7 +84,7 @@ manhattan_plot.default(x, ...)
   highlight.col = NULL,
   rescale = TRUE,
   rescale.ratio.threshold = 5,
-  signif.rel.pos = 0.4,
+  signif.rel.pos = 0.2,
   color.by.highlight = FALSE,
   preserve.position = FALSE,
   thin = NULL,
@@ -114,8 +116,10 @@ desired. If \code{NULL}, then all the chromosomes in the data will be plotted.}
 is supplied (i.e. \code{!is.null(outfn)}), then the plot is not drawn in
 the graphics window.}
 
-\item{signif}{a numeric vector. Significant p-value thresholds to be drawn for
-manhattan plot. At least one value should be provided. Default value is c(5e-08, 1e-5)}
+\item{signif}{a numeric vector. Significant p-value thresholds to be drawn for manhattan plot.
+At least one value should be provided. Default value is c(5e-08, 1e-5).
+If \code{signif} is not \code{NULL} and \code{x} is an \code{MPdata} object,
+\code{signif} argument overrides the value inside \code{MPdata}.}
 
 \item{pval.colname}{a character. Column name of \code{x} containing p.value.}
 
@@ -133,9 +137,10 @@ Ignored if \code{NULL}.}
 
 \item{chr.order}{a character vector. Order of chromosomes presented in manhattan plot.}
 
-\item{signif.col}{a character vector of equal length as \code{signif}. It contains
-colors for the lines drawn at \code{signif}. If \code{NULL}, the smallest value is colored
-black while others are grey.}
+\item{signif.col}{a character vector of equal length as \code{signif}.
+It contains colors for the lines drawn at \code{signif}.
+If \code{NULL}, the smallest value is colored black while others are grey. If \code{x} is an \code{MPdata} object,
+behaves similarly to \code{signif}.}
 
 \item{chr.col}{a character vector of equal length as chr.order. It contains colors
 for the chromosomes. Name of the vector should match \code{chr.order}. If \code{NULL}, default
