@@ -189,6 +189,7 @@ manhattan_data_preprocess.data.frame <- function(
   # Create MPdata Class
   mpdata <- list(
     data = x,
+    chr_width = chr_width,
     start_pos = start_pos,
     center_pos = center_pos,
     end_pos = end_pos,
