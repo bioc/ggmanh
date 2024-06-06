@@ -84,3 +84,21 @@ test_that("Test that sort checking works correctly.", {
   expect_true(data_is_unsorted(dat, "A1", "B2"))
   expect_true(data_is_unsorted(dat, "A3", "B2"))
 })
+
+test_that("Test that sort checking works correctly.", {
+  dat <- data.frame(
+    A1 = factor(c(rep("A", 3), rep("B", 4)), levels = c("A","B")),
+    A2 = factor(rep(c("A","B"), length.out = 7), levels = c("A","B")),
+    A3 = factor(rep("A",7), levels = c("A","B")),
+    B1 = 1:7,
+    B2 = c(1,2,3,6,4,5,7)
+  )
+  
+  expect_false(data_is_unsorted(dat, "A1", "B1"))
+  expect_false(data_is_unsorted(dat, "A3", "B1"))
+  
+  expect_true(data_is_unsorted(dat, "A2", "B1"))
+  expect_true(data_is_unsorted(dat, "A2", "B2"))
+  expect_true(data_is_unsorted(dat, "A1", "B2"))
+  expect_true(data_is_unsorted(dat, "A3", "B2"))
+})

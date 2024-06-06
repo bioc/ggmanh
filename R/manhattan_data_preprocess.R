@@ -131,6 +131,11 @@ manhattan_data_preprocess.data.frame <- function(
   # factorize chromosome column to set order of chromosomes for the plot
   if (!is.null(chr.order)) {
     x[[chr.colname]] <- factor(x[[chr.colname]], levels = chr.order)
+    if (any(is.na(x[[chr.colname]]))) {
+      n_miss <- sum(is.na(x[[chr.colname]]))
+      warning("Some chromosomes are not specified in chr.order (", n_miss," rows). These chromosomes will be removed.")
+      x <- remove_na(x, chr.colname = chr.colname)
+    }
   } else if (!is.factor(x[[chr.colname]])) {
     x[[chr.colname]] <- factor(x[[chr.colname]])
     chr.order <- levels(x[[chr.colname]])
@@ -189,6 +194,7 @@ manhattan_data_preprocess.data.frame <- function(
   # Create MPdata Class
   mpdata <- list(
     data = x,
+    chr_width = chr_width,
     start_pos = start_pos,
     center_pos = center_pos,
     end_pos = end_pos,

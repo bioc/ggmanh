@@ -96,6 +96,14 @@ manhattan_plot.data.frame <- function(
 #' @param outfn a character. File name to save the Manhattan Plot. If \code{outfn}
 #'  is supplied (i.e. \code{!is.null(outfn)}), then the plot is not drawn in
 #'  the graphics window.
+#' @param signif a numeric vector. Significant p-value thresholds to be drawn for manhattan plot.
+#' At least one value should be provided. Default value is c(5e-08, 1e-5). 
+#' If \code{signif} is not \code{NULL} and \code{x} is an \code{MPdata} object, 
+#' \code{signif} argument overrides the value inside \code{MPdata}.
+#' @param signif.col a character vector of equal length as \code{signif}.
+#' It contains colors for the lines drawn at \code{signif}. 
+#' If \code{NULL}, the smallest value is colored black while others are grey. If \code{x} is an \code{MPdata} object,
+#' behaves similarly to \code{signif}.
 #' @param rescale a logical. If \code{TRUE}, the plot will rescale itself depending
 #' on the data. More on this in details.
 #' @param rescale.ratio.threshold a numeric. Threshold of that triggers the rescale.
@@ -117,7 +125,7 @@ manhattan_plot.data.frame <- function(
 #'
 #' @export
 manhattan_plot.MPdata <- function(
-  x, chromosome = NULL, outfn = NULL,
+  x, chromosome = NULL, outfn = NULL, signif = NULL, signif.col = NULL,
   rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
   label.colname = NULL, x.label = "Chromosome", y.label = expression(-log[10](p)),
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
@@ -137,6 +145,19 @@ manhattan_plot.MPdata <- function(
 
   # decide if the resulting plot will be single chromosome, or multiple
   single.chr <- length(unique(x$data[[x$chr.colname]])) == 1
+  
+  # update signif if values are provided
+  if (!is.null(signif)) {
+    
+    # update signif parameter values
+    x$signif <- signif
+    
+    preprocess_arg_check_out <- preprocess_arg_check(
+      x = x$data, signif = x$signif, signif.col = signif.col
+    )
+    
+    x$signif.col <- preprocess_arg_check_out$signif.col
+  }
 
   # create transformation object; if rescaling is required, create appropriate transformation
   trans <- list("trans" = "identity", "breaks" = ggplot2::waiver())

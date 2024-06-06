@@ -1,65 +1,81 @@
 # check preprocessing arguments
 preprocess_arg_check <- function(
-  x, chromosome, signif, signif.col, pval.colname, chr.colname,
-  pos.colname, preserve.position, pval.log.transform
+    x, 
+    chromosome = NULL, 
+    signif = NULL, 
+    signif.col = NULL,
+    pval.colname = NULL,
+    chr.colname = NULL,
+    pos.colname = NULL, 
+    preserve.position = NULL, 
+    pval.log.transform = NULL
 ) {
-  preprocess_checklist <- list(signif.col = signif.col)
-  # check significance cutoff exists
-  if (length(signif) < 1) stop("At least one significance threshold should be provided.")
-
-  # check that significance cutoff is numeric
-  if (!is.numeric(signif)) stop("signif should be a numeric vector.")
-
-  # check signif.col
-  if (is.null(signif.col)) {
-    preprocess_checklist$signif.col <- rep("grey", length(signif))
-    preprocess_checklist$signif.col[which.max(-log10(signif))] <- "black"
-  } else if (!all(valid_colors(signif.col))) {
-    warning("invalid signif.col colors... using default colors.")
-    preprocess_checklist$signif.col <- rep("grey", length(signif))
-    preprocess_checklist$signif.col[which.max(-log10(signif))] <- "black"
-  } else if (length(signif) != length(signif.col)) {
-    warning("Length of signif and signif.col do not match.")
-    if (length(signif.col) > length(signif)) {
-      signif.col <- signif.col[1:length(signif)]
-    } else {
-      signif.col <- rep(signif.col, length.out = length(signif))
-    }
+  
+  preprocess_checklist <- list()
+  
+  # signif input check
+  if (!is.null(signif)) {
     preprocess_checklist$signif.col <- signif.col
+    # check significance cutoff exists
+    if (length(signif) < 1) stop("At least one significance threshold should be provided.")
+    
+    # check that significance cutoff is numeric
+    if (!is.numeric(signif)) stop("signif should be a numeric vector.")
+    
+    # check signif.col
+    if (is.null(signif.col)) {
+      preprocess_checklist$signif.col <- rep("grey", length(signif))
+      preprocess_checklist$signif.col[which.max(-log10(signif))] <- "black"
+    } else if (!all(valid_colors(signif.col))) {
+      warning("invalid signif.col colors... using default colors.")
+      preprocess_checklist$signif.col <- rep("grey", length(signif))
+      preprocess_checklist$signif.col[which.max(-log10(signif))] <- "black"
+    } else if (length(signif) != length(signif.col)) {
+      warning("Length of signif and signif.col do not match.")
+      if (length(signif.col) > length(signif)) {
+        signif.col <- signif.col[1:length(signif)]
+      } else {
+        signif.col <- rep(signif.col, length.out = length(signif))
+      }
+      preprocess_checklist$signif.col <- signif.col
+    }
   }
-
+  
   # check that the supplied column names exist
-  if (!all(c(is.character(pval.colname), is.character(chr.colname), is.character(pos.colname)))) {
-    stop("Column names should be characters.")
+  if (any(c(!is.null(pval.colname), !is.null(chr.colname), !is.null(pos.colname)))) {
+    if (!all(c(is.character(pval.colname), is.character(chr.colname), is.character(pos.colname)))) {
+      stop("Column names should be characters.")
+    }
+    if (!all(c(pval.colname, chr.colname, pos.colname) %in% colnames(x))) {
+      tmp <- c(pval.colname, chr.colname, pos.colname)
+      stop(sprintf("Column name(s) not in data: %s.", paste0(tmp[!(tmp %in% colnames(x))], collapse = ", ")))
+    }
+    if (pval.colname == "log10pval") {
+      stop("Choose a different name for pvalue column name.")
+    }
+    
+    if (!is.numeric(x[[pval.colname]])) stop(pval.colname, " should be a numeric column.")
+    if (!is.numeric(x[[pos.colname]])) stop(pos.colname, " should be a numeric column.")
   }
-  if (!all(c(pval.colname, chr.colname, pos.colname) %in% colnames(x))) {
-    tmp <- c(pval.colname, chr.colname, pos.colname)
-    stop(sprintf("Column name(s) not in data: %s.", paste0(tmp[!(tmp %in% colnames(x))], collapse = ", ")))
-  }
-  if (pval.colname == "log10pval") {
-    stop("Choose a different name for pvalue column name.")
-  }
-
+  
   # check that the supplied chromosomes exist
   if (!is.null(chromosome)) {
     valid_chr(x, chromosome, chr.colname)
   }
-
+  
   # check that the values in p-value column are valid
   if (pval.log.transform) {
     if (any(x[[pval.colname]] < 0, na.rm = TRUE) | any(x[[pval.colname]] > 1, na.rm = TRUE)) {
       stop("p.value is a probability between 0 and 1.")
     }
   }
-
-  # check that column names are valid
-  if (!is.numeric(x[[pval.colname]])) stop(pval.colname, " should be a numeric column.")
-  if (!is.numeric(x[[pos.colname]])) stop(pos.colname, " should be a numeric column.")
-
-  if (length(preserve.position) != 1 | !is.logical(preserve.position)) {
-    stop("preserve.position should be TRUE or FALSE.")
+  
+  if (!is.null(preserve.position)) {
+    if (length(preserve.position) != 1 | !is.logical(preserve.position)) {
+      stop("preserve.position should be TRUE or FALSE.")
+    }
   }
-
+  
   return(preprocess_checklist)
 }
 
@@ -71,14 +87,21 @@ valid_chr <- function(x, chromosome, chr.colname) {
 }
 
 # remove entries where position, chromosome, or pvalue is missing
-remove_na <- function(x, chr.colname, pos.colname, pval.colname) {
-  na_remove <- which(is.na(x[[chr.colname]]) | is.na(x[[pos.colname]]) | is.na(x[[pval.colname]]))
-  if (length(na_remove) > 0) {
-    warning("Removed ", length(na_remove), " rows due to missing chromosome/position/pvalue.\n")
-    x <- x[-na_remove,]
+remove_na <- function(x, chr.colname = NULL, pos.colname = NULL, pval.colname = NULL) {
+  n_before <- nrow(x)
+  x <- tidyr::drop_na(x, tidyr::all_of(c(chr.colname, pos.colname, pval.colname)))
+  n_after <- nrow(x)
+  
+  present_col <- paste(
+    c("chromosome", "position", "p-value")[
+      c(!is.null(chr.colname), !is.null(pos.colname), !is.null(pval.colname))
+      ], collapse = "/")
+  
+  if (n_before != n_after) {
+    warning("Removed ", n_before - n_after, " rows due to missing ", present_col, ".\n")
   }
-  if (nrow(x) < 1) {
-    stop("Empty rows after omitting missing chromosome/position/pvalue.\n")
+  if (n_after < 1) {
+    stop("Empty rows after omitting missing ", present_col, ".\n")
   }
   return(x)
 }
@@ -168,7 +191,7 @@ set_highlight_col <- function(x, highlight.colname, highlight.col) {
       }
     }
   }
-
+  
   return(highlight.col)
 }
 
@@ -204,29 +227,29 @@ sequence_along_chr_unscaled <- function(pos) {
 
 # concatenate elements across the list
 concat_list <- function(dflist, concat_char = "/") {
-
+  
   if (!all(unlist(lapply(dflist, is.vector)) | unlist(lapply(dflist, is.factor)))) {
     stop("All elements in the list should be a vector.")
   }
-
+  
   check_lengths <- lapply(dflist, length)
   if (length(unique(unlist(check_lengths))) != 1) {
     stop("Length of all list elements should be equal.")
   }
-
+  
   if (!is.character(concat_char)) stop("concat_char should be of character type.")
-
+  
   if (length(concat_char) > 1) {
     warning("concat_char should be a character vector of length 1. Using first element.")
     concat_char <- concat_char[1]
   } else if (length(concat_char) < 1) {
     warning("concat_char should be a character of length 1. Using \"/\" by default.")
   }
-
+  
   if (nchar(concat_char) < 1) {
     warning("concat_char should be a character of length 1. Using \"/\" by default.")
   }
-
+  
   dflist <- lapply(dflist, function(x) {
     x <- as.character(x)
     x[is.na(x)] <- ""
@@ -255,7 +278,7 @@ concat_df_cols <- function(df, concat_char = "/") {
   if (nchar(concat_char) < 1) {
     warning("concat_char should be a character of length 1. Using \"/\" by default.")
   }
-
+  
   return(concat_list(as.list(df), concat_char))
 }
 
