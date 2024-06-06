@@ -86,3 +86,4 @@ test_that("Test that sort checking works correctly.", {
   expect_true(data_is_unsorted(dat, "A1", "B2"))
   expect_true(data_is_unsorted(dat, "A3", "B2"))
 })
+
