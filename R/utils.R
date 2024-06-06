@@ -89,14 +89,21 @@ valid_chr <- function(x, chromosome, chr.colname) {
 }
 
 # remove entries where position, chromosome, or pvalue is missing
-remove_na <- function(x, chr.colname, pos.colname, pval.colname) {
-  na_remove <- which(is.na(x[[chr.colname]]) | is.na(x[[pos.colname]]) | is.na(x[[pval.colname]]))
-  if (length(na_remove) > 0) {
-    warning("Removed ", length(na_remove), " rows due to missing chromosome/position/pvalue.\n")
-    x <- x[-na_remove,]
+remove_na <- function(x, chr.colname = NULL, pos.colname = NULL, pval.colname = NULL) {
+  n_before <- nrow(x)
+  x <- tidyr::drop_na(x, tidyr::all_of(c(chr.colname, pos.colname, pval.colname)))
+  n_after <- nrow(x)
+  
+  present_col <- paste(
+    c("chromosome", "position", "p-value")[
+      c(!is.null(chr.colname), !is.null(pos.colname), !is.null(pval.colname))
+      ], collapse = "/")
+  
+  if (n_before != n_after) {
+    warning("Removed ", n_before - n_after, " rows due to missing ", present_col, ".\n")
   }
-  if (nrow(x) < 1) {
-    stop("Empty rows after omitting missing chromosome/position/pvalue.\n")
+  if (n_after < 1) {
+    stop("Empty rows after omitting missing ", present_col, ".\n")
   }
   return(x)
 }
