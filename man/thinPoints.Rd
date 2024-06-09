@@ -4,7 +4,7 @@
 \alias{thinPoints}
 \title{Thin Data Points}
 \usage{
-thinPoints(dat, value, n = 3000, nbins = 200, groupBy = NULL)
+thinPoints(dat, value, n = 1000, nbins = 200, groupBy = NULL)
 }
 \arguments{
 \item{dat}{a data frame}

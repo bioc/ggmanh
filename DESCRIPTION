@@ -1,6 +1,6 @@
 Package: ggmanh
 Title: Visualization Tool for GWAS Result
-Version: 1.9.3
+Version: 1.9.5
 Authors@R: c(
         person(given = "John", family = "Lee", role = c("aut", "cre"), email = "swannyy.stat@gmail.com"),
         person(given = "John", family = "Lee", role = c("aut"), email = "john.lee@abbvie.com", comment = "AbbVie"),
@@ -22,7 +22,8 @@ Imports:
     rlang,
     scales,
     SeqArray (>= 1.32.0),
-    stats
+    stats,
+    tidyr
 Depends:
     methods,
     ggplot2

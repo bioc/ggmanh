@@ -44,29 +44,45 @@ test_that("Check that preprocess works as intended", {
   expect_equal(mpdat1$data$pval, c(0.05,0.05,0.0005,0.000005,0.005,0.0005))
 })
 
-# test_that("Test that the function generates a warning when too many labels are supplied.", {
-#   df <- data.frame(
-#     pval = runif(100),
-#     chr = sample(1:12,100,replace=TRUE),
-#     pos = sample(100),
-#     label = as.character(sample(100))
-#   )
-#   expect_warning(p <- manhattan_plot(x = df, label.colname = "label"))
-# })
-
 test_that("Test that the thinPoint function subsets correctly.", {
   dat <- data.frame(
     A1 = c(1:20, 20, 20),
-    A2 = c(rep(1, 12), rep(1,5), rep(20, 3), 20, 20) ,
+    A2 = c(rep(1, 12), rep(1,5), rep(20, 3), 20, 20),
     B = rep(c("a", "b", "c", "d"), times = c(5, 7, 8, 2))
   )
   expect_equal(nrow(thinPoints(dat, value = "A1", n = 6, nbins = 2)), 12)
   expect_equal(nrow(thinPoints(dat, value = "A2", n = 6, nbins = 2)), 11)
-  expect_equal(nrow(thinPoints(dat, value = "A1", n = 3, nbins = 2, groupBy = "B")), 19)
+  expect_equal(nrow(thinPoints(dat, value = "A1", n = 3, nbins = 2, groupBy = "B")), 13)
 
   tmp <- thinPoints(dat, value = "A2", n = 3, nbins = 2, groupBy = "B")
   expect_equal(nrow(tmp), 14)
   expect_true(with(tmp, (sum(B == "a") == 3) && (sum(B == "b") == 3) && (sum(B == "c") == 6) && (sum(B == "d") == 2)))
+  
+  dat <- data.frame(
+    A = c(rep(1, 3), rep(10, 3), rep(20, 4), rep(20, 6)),
+    B = c(rep("A", 10), rep("B", 6))
+  )
+  expect_equal(nrow(thinPoints(dat, value = "A", n = 3, nbins = 1, groupBy = "B")), 6)
+  expect_equal(nrow(thinPoints(dat, value = "A", n = 3, nbins = 1)), 3)
+  expect_equal(nrow(thinPoints(dat, value = "A", n = 3, nbins = 2, groupBy = "B")), 9)
+})
+
+test_that("Test that sort checking works correctly.", {
+  dat <- data.frame(
+    A1 = factor(c(rep("A", 3), rep("B", 4)), levels = c("A","B")),
+    A2 = factor(rep(c("A","B"), length.out = 7), levels = c("A","B")),
+    A3 = factor(rep("A",7), levels = c("A","B")),
+    B1 = 1:7,
+    B2 = c(1,2,3,6,4,5,7)
+  )
+  
+  expect_false(data_is_unsorted(dat, "A1", "B1"))
+  expect_false(data_is_unsorted(dat, "A3", "B1"))
+  
+  expect_true(data_is_unsorted(dat, "A2", "B1"))
+  expect_true(data_is_unsorted(dat, "A2", "B2"))
+  expect_true(data_is_unsorted(dat, "A1", "B2"))
+  expect_true(data_is_unsorted(dat, "A3", "B2"))
 })
 
 test_that("Test that sort checking works correctly.", {
