@@ -24,17 +24,17 @@ dat <- read.table("../GCST90018926_buildGRCh37.tsv", sep = "\t", header = TRUE)
 
 x <- binned_manhattan_preprocess.data.frame(
   dat, bins_x = 20, bins_y = 100, pval.colname = "p_value",
-  chr.colname = "chromosome", pos.colname = "base_pair_location", chr.order = c(1:5),
+  chr.colname = "chromosome", pos.colname = "base_pair_location", chr.order = c(1:22,"X"),
   signif.col = NULL, preserve.position = TRUE, pval.log.transform = TRUE
 )
 
 mpdat <- manhattan_data_preprocess(
-  dat[dat$chromosome %in% 1:7,], pval.colname = "p_value", chr.colname = "chromosome", pos.colname = "base_pair_location",
-  chr.order = c(1:5), thin = FALSE, preserve.position = TRUE
+  dat, pval.colname = "p_value", chr.colname = "chromosome", pos.colname = "base_pair_location",
+  chr.order = c(1:22,"X"), thin = FALSE, preserve.position = TRUE
 )
 
 x <- binned_manhattan_preprocess.MPdata(
-  mpdat, bins_x = 20, bins_y = 100
+  mpdat, bins_x = 40, bins_y = 100
 )
 
 binned_manhattan_plot.MPdataBinned(x)
