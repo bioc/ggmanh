@@ -177,6 +177,9 @@ manhattan_plot.MPdata <- function(
     x.break.label <- ggplot2::waiver()
     x.limits <- NULL
   } else {
+    if (x$pos.colname == "new_pos_unscaled") {
+      x$data$new_pos_unscaled <- calc_new_pos_(x$data$new_pos_unscaled, x$data[[x$chr.colname]], x$chr.pos.info)
+    }
     pos <- x$pos.colname
     x.break <- x$chr.pos.info$center_pos
     x.break.label <- x$chr.labels

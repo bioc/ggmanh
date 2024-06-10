@@ -331,8 +331,12 @@ get_chr_pos_info <- function(chr_width, chr_gap_scaling = 1) {
   return(pos_info_list)
 }
 
-calc_new_pos <- function(new_pos_unscaled, chr, chr_pos_info) {
+calc_new_pos_ <- function(new_pos_unscaled, chr, chr_pos_info) {
   new_pos_unscaled * 
     unname(chr_pos_info$chr_width[as.character(chr)]) +
-    chr_pos_info$start_pos[as.character(chr)]
+    unname(chr_pos_info$start_pos[as.character(chr)])
+}
+
+calc_new_pos <- function(mpdat) {
+  calc_new_pos_(mpdat$data$new_pos_unscaled, mpdat$data[[mpdat$chr.colname]], mpdat$chr.pos.info)
 }

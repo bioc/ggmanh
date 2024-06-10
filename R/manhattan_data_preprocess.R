@@ -165,7 +165,7 @@ manhattan_data_preprocess.data.frame <- function(
     
     # this is the new position for each marker that is not scaled
     # or positioned (respective to chromosome)
-    new_pos <-
+    x$new_pos_unscaled <-
       unlist(
         tapply(x[[pos.colname]], x[[chr.colname]], FUN = function(y) sequence_along_chr_scaled(y), simplify = FALSE),
         use.names = FALSE)
@@ -177,7 +177,7 @@ manhattan_data_preprocess.data.frame <- function(
 
     # this is the new position for each marker that is not scaled
     # or positioned (respective to chromosome)
-    new_pos <-
+    x$new_pos_unscaled <-
       unlist(
         tapply(x[[pos.colname]], x[[chr.colname]], FUN = function(y) sequence_along_chr_unscaled(y), simplify = FALSE),
         use.names = FALSE)
@@ -185,8 +185,6 @@ manhattan_data_preprocess.data.frame <- function(
 
   # fix certain widths for each chromosome, and gap for in between chromosomes
   chr.pos.info <- get_chr_pos_info(chr_width = chr_width, chr_gap_scaling = 1)
-  
-  x$new_pos <- calc_new_pos(new_pos, x[[chr.colname]], chr.pos.info)
 
   # thin data points if it set to true
   if (thin) {
@@ -204,7 +202,7 @@ manhattan_data_preprocess.data.frame <- function(
     highlight.col = highlight.col,
     chr.labels = chr.order,
     chr.colname = chr.colname,
-    pos.colname = "new_pos",
+    pos.colname = "new_pos_unscaled",
     true.pos.colname = pos.colname,
     pval.colname = pval.colname
   )
