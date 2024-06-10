@@ -178,9 +178,9 @@ manhattan_plot.MPdata <- function(
     x.limits <- NULL
   } else {
     pos <- x$pos.colname
-    x.break <- x$center_pos
+    x.break <- x$chr.pos.info$center_pos
     x.break.label <- x$chr.labels
-    x.limits <- c(min(x$start_pos), max(x$end_pos))
+    x.limits <- c(min(x$chr.pos.info$start_pos), max(x$chr.pos.info$end_pos))
   }
 
   # choose whether to use highlight.colname or chr.colname

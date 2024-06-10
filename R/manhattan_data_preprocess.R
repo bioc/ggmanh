@@ -125,6 +125,7 @@ manhattan_data_preprocess.data.frame <- function(
 
   # subset by chromosome if chromosome is specified
   if (!is.null(chromosome)) {
+    valid_chr(x, chromosome, chr.colname)
     x <- x[x[[chr.colname]] == chromosome,]
   }
 
@@ -161,30 +162,31 @@ manhattan_data_preprocess.data.frame <- function(
     chr_width <- table(x[[chr.colname]])
     chr_width <- as.numeric(chr_width); names(chr_width) <- chr.order
     chr_width <- chr_width / sum(chr_width) * nchr
-
+    
+    # this is the new position for each marker that is not scaled
+    # or positioned (respective to chromosome)
     new_pos <-
       unlist(
         tapply(x[[pos.colname]], x[[chr.colname]], FUN = function(y) sequence_along_chr_scaled(y), simplify = FALSE),
-        use.names = FALSE) * unname(chr_width[as.character(x[[chr.colname]])])
+        use.names = FALSE)
 
   } else {
     # all chromsomes have equal length & all variants are equally spaced
     chr_width <- rep(1, nchr)
     names(chr_width) <- chr.order
 
+    # this is the new position for each marker that is not scaled
+    # or positioned (respective to chromosome)
     new_pos <-
       unlist(
         tapply(x[[pos.colname]], x[[chr.colname]], FUN = function(y) sequence_along_chr_unscaled(y), simplify = FALSE),
-        use.names = FALSE) * unname(chr_width[as.character(x[[chr.colname]])])
+        use.names = FALSE)
   }
 
   # fix certain widths for each chromosome, and gap for in between chromosomes
-  lg <- 0.15 / 26 * nchr # gap between chromosome (should be robust with different lengths of chromosme)
-  start_pos <- c(0, cumsum(chr_width)[-nchr]) + ((1:nchr - 1) * lg)
-  names(start_pos) <- chr.order # starting x-coordinate for each chr
-  end_pos <- start_pos + chr_width # ending x-coordinate for each chr
-  center_pos <- (start_pos + end_pos) / 2 # middle x-coordinate for each chr... used for x axis labelling
-  x$new_pos <- new_pos + start_pos[as.character(x[[chr.colname]])]
+  chr.pos.info <- get_chr_pos_info(chr_width = chr_width, chr_gap_scaling = 1)
+  
+  x$new_pos <- calc_new_pos(new_pos, x[[chr.colname]], chr.pos.info)
 
   # thin data points if it set to true
   if (thin) {
@@ -194,10 +196,7 @@ manhattan_data_preprocess.data.frame <- function(
   # Create MPdata Class
   mpdata <- list(
     data = x,
-    chr_width = chr_width,
-    start_pos = start_pos,
-    center_pos = center_pos,
-    end_pos = end_pos,
+    chr.pos.info = chr.pos.info,
     signif = signif,
     signif.col = signif.col,
     chr.col = chr.col,

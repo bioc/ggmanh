@@ -303,3 +303,36 @@ data_is_unsorted <- function(x, chr.colname, pos.colname) {
   pos_unsorted <- tapply(x[[pos.colname]], x[[chr.colname]], is.unsorted, default = FALSE)
   return(chr_unsorted | any(pos_unsorted))
 }
+
+get_chr_pos_info <- function(chr_width, chr_gap_scaling = 1) {
+  nchr <- length(chr_width)
+ 
+   # gap between chromosome (should be robust with different lengths of chromosme)
+  chr_gap <- 0.15 / 26 * nchr * chr_gap_scaling
+  
+  # starting x-coordinate for each chr
+  start_pos <- c(0, cumsum(chr_width)[-nchr]) + ((1:nchr - 1) * chr_gap)
+  names(start_pos) <- names(chr_width)
+  
+  # ending x-coordinate for each chr
+  end_pos <- start_pos + chr_width
+  
+  # middle x-coordinate for each chr... used for x axis labelling
+  center_pos <- (start_pos + end_pos) / 2
+  
+  pos_info_list <- list(
+    chr_gap = chr_gap,
+    chr_width = chr_width,
+    start_pos = start_pos,
+    center_pos = center_pos,
+    end_pos = end_pos
+  )
+  
+  return(pos_info_list)
+}
+
+calc_new_pos <- function(new_pos_unscaled, chr, chr_pos_info) {
+  new_pos_unscaled * 
+    unname(chr_pos_info$chr_width[as.character(chr)]) +
+    chr_pos_info$start_pos[as.character(chr)]
+}

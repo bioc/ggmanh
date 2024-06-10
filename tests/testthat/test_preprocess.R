@@ -12,7 +12,7 @@ test_that("Check that good arguments are provided", {
 
   tmpdf <- df
   tmpdf[2,"B"] <- NA
-  expect_warning(manhattan_data_preprocess(tmpdf, pval.colname = "C", pos.colname = "A", chr.colname = "B"))
+  expect_warning(manhattan_data_preprocess.data.frame(tmpdf, pval.colname = "C", pos.colname = "A", chr.colname = "B"))
 
   tmpdf <- df
   tmpdf[3,"C"] <- NA
