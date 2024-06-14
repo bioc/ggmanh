@@ -28,6 +28,7 @@ manhattan_data_preprocess(x, ...)
   thin.n = 1000,
   thin.bins = 200,
   pval.log.transform = TRUE,
+  chr.gap.scaling = 1,
   ...
 )
 
@@ -98,6 +99,9 @@ Defaults to 1000.}
 \item{thin.bins}{an integer. Number of bins to partition the data. Defaults to 200.}
 
 \item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
+
+\item{chr.gap.scaling}{scaling factor for gap between chromosome if you desire to change it.
+This can also be set in \code{manhattan_plot}}
 }
 \value{
 a MPdata object. This object contains all the necessary info for constructing

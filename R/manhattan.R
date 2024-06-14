@@ -63,7 +63,8 @@ manhattan_plot.data.frame <- function(
   x, chromosome = NULL, outfn = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", chr.colname = "chr",
   pos.colname = "pos", label.colname = NULL, highlight.colname = NULL, chr.order = NULL,
   signif.col = NULL, chr.col = NULL,  highlight.col = NULL,
-  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
+  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, chr.gap.scaling = 1,
+  color.by.highlight = FALSE,
   preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
@@ -75,7 +76,8 @@ manhattan_plot.data.frame <- function(
     x, chromosome = chromosome, signif = signif, pval.colname = pval.colname, chr.colname = chr.colname, pos.colname = pos.colname,
     chr.order = chr.order, signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
     highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-    thin.n = thin.n, thin.bins = thin.bins, pval.log.transform = pval.log.transform
+    thin.n = thin.n, thin.bins = thin.bins, pval.log.transform = pval.log.transform,
+    chr.gap.scaling = chr.gap.scaling
   )
 
   # manhattan plot
@@ -85,7 +87,7 @@ manhattan_plot.data.frame <- function(
     label.colname = label.colname, x.label = x.label, y.label = y.label,
     point.size = point.size, label.font.size = label.font.size,
     max.overlaps = max.overlaps, plot.title = plot.title, plot.subtitle = plot.subtitle,
-    plot.width = plot.width, plot.height = plot.height, ...
+    plot.width = plot.width, plot.height = plot.height, chr.gap.scaling = NULL, ...
   )
 
 }
@@ -109,6 +111,8 @@ manhattan_plot.data.frame <- function(
 #' @param rescale.ratio.threshold a numeric. Threshold of that triggers the rescale.
 #' @param signif.rel.pos a numeric between 0.1 and 0.9. If the plot is rescaled,
 #' where should the significance threshold be positioned?
+#' @param chr.gap.scaling a numeric. scaling factor for gap between chromosome if you desire to change it
+#' if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.
 #' @param color.by.highlight a logical. Should the points be colored based on a highlight column?
 #' @param label.colname a character. Name of the column in \code{MPdata$data}
 #'   to be used for labelling.
@@ -126,7 +130,8 @@ manhattan_plot.data.frame <- function(
 #' @export
 manhattan_plot.MPdata <- function(
   x, chromosome = NULL, outfn = NULL, signif = NULL, signif.col = NULL,
-  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
+  rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, 
+  chr.gap.scaling = NULL, color.by.highlight = FALSE,
   label.colname = NULL, x.label = "Chromosome", y.label = expression(-log[10](p)),
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(),
@@ -145,6 +150,15 @@ manhattan_plot.MPdata <- function(
 
   # decide if the resulting plot will be single chromosome, or multiple
   single.chr <- length(unique(x$data[[x$chr.colname]])) == 1
+  
+  # check if chromosome gap needs to change
+  if (!is.null(chr.gap.scaling)) {
+    chr.gap.scaling <- preprocess_arg_check(chr.gap.scaling = chr.gap.scaling)$chr.gap.scaling
+    x$chr.pos.info <- get_chr_pos_info(
+      chr_width = x$chr.pos.info$chr_width,
+      chr_gap_scaling = x$chr.pos.info$chr_gap / 0.15 * 24 / length(x$chr.pos.info$chr_width) * chr.gap.scaling
+    )
+  }
   
   # update signif if values are provided
   if (!is.null(signif)) {
@@ -266,7 +280,7 @@ setMethod(
     x, chromosome = NULL, outfn = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", label.colname = NULL,
     highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL,  highlight.col = NULL,
-    rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, color.by.highlight = FALSE,
+    rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, chr.gap.scaling = 1, color.by.highlight = FALSE,
     preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE,
     plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
     point.size = 0.75, label.font.size = 2, max.overlaps = 20,
@@ -278,7 +292,8 @@ setMethod(
       x, signif = signif, pval.colname = pval.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.colname = highlight.colname,
       highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n, thin.bins = thin.bins, chromosome = chromosome, pval.log.transform = pval.log.transform,...
+      thin.n = thin.n, thin.bins = thin.bins, chromosome = chromosome, pval.log.transform = pval.log.transform,
+      chr.gap.scaling = chr.gap.scaling, ...
     )
 
     # manhattan plot
@@ -288,7 +303,7 @@ setMethod(
       label.colname = label.colname, x.label = x.label, y.label = y.label,
       point.size = point.size, label.font.size = label.font.size,
       max.overlaps = max.overlaps, plot.title = plot.title, plot.subtitle = plot.subtitle,
-      plot.width = plot.width, plot.height = plot.height, ...
+      plot.width = plot.width, plot.height = plot.height, chr.gap.scaling = NULL, ...
     )
 
   }

@@ -35,6 +35,7 @@ manhattan_plot.default(x, ...)
   thin.n = 1000,
   thin.bins = 200,
   pval.log.transform = TRUE,
+  chr.gap.scaling = 1,
   plot.title = ggplot2::waiver(),
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
@@ -56,6 +57,7 @@ manhattan_plot.default(x, ...)
   rescale = TRUE,
   rescale.ratio.threshold = 5,
   signif.rel.pos = 0.2,
+  chr.gap.scaling = NULL,
   color.by.highlight = FALSE,
   label.colname = NULL,
   x.label = "Chromosome",
@@ -172,6 +174,9 @@ Defaults to 1000.}
 \item{thin.bins}{an integer. Number of bins to partition the data. Defaults to 200.}
 
 \item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
+
+\item{chr.gap.scaling}{a numeric. scaling factor for gap between chromosome if you desire to change it
+if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.}
 
 \item{plot.title}{a character. Plot title}
 

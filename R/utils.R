@@ -8,7 +8,8 @@ preprocess_arg_check <- function(
     chr.colname = NULL,
     pos.colname = NULL, 
     preserve.position = NULL, 
-    pval.log.transform = NULL
+    pval.log.transform = NULL,
+    chr.gap.scaling = NULL
 ) {
   
   preprocess_checklist <- list()
@@ -64,9 +65,11 @@ preprocess_arg_check <- function(
   }
   
   # check that the values in p-value column are valid
-  if (pval.log.transform) {
-    if (any(x[[pval.colname]] < 0, na.rm = TRUE) | any(x[[pval.colname]] > 1, na.rm = TRUE)) {
-      stop("p.value is a probability between 0 and 1.")
+  if (!is.null(pval.log.transform)) {
+    if (pval.log.transform) {
+      if (any(x[[pval.colname]] < 0, na.rm = TRUE) | any(x[[pval.colname]] > 1, na.rm = TRUE)) {
+        stop("p.value is a probability between 0 and 1.")
+      }
     }
   }
   
@@ -74,6 +77,21 @@ preprocess_arg_check <- function(
     if (length(preserve.position) != 1 | !is.logical(preserve.position)) {
       stop("preserve.position should be TRUE or FALSE.")
     }
+  }
+  
+  if (!is.null(chr.gap.scaling)) {
+    if (!is.numeric(chr.gap.scaling)) {
+      warning("chr.gap.scaling should be numeric. Setting value to 1.")
+      chr.gap.scaling <- 1
+    } else if (length(chr.gap.scaling) > 1) {
+      warning("Multiple values for chr.gap.scaling provided. Only using the first value.")
+      chr.gap.scaling <- chr.gap.scaling[1]
+    }
+    if (chr.gap.scaling < 0) {
+      warning("chr.gap.scaling should be a positive number. Setting value to 1.")
+      chr.gap.scaling <- 1
+    }
+    preprocess_checklist$chr.gap.scaling <- chr.gap.scaling
   }
   
   return(preprocess_checklist)
@@ -307,8 +325,8 @@ data_is_unsorted <- function(x, chr.colname, pos.colname) {
 get_chr_pos_info <- function(chr_width, chr_gap_scaling = 1) {
   nchr <- length(chr_width)
  
-   # gap between chromosome (should be robust with different lengths of chromosme)
-  chr_gap <- 0.15 / 26 * nchr * chr_gap_scaling
+  # gap between chromosome (should be robust with different lengths of chromosme)
+  chr_gap <- 0.15 / 24 * nchr * chr_gap_scaling
   
   # starting x-coordinate for each chr
   start_pos <- c(0, cumsum(chr_width)[-nchr]) + ((1:nchr - 1) * chr_gap)
@@ -337,6 +355,40 @@ calc_new_pos_ <- function(new_pos_unscaled, chr, chr_pos_info) {
     unname(chr_pos_info$start_pos[as.character(chr)])
 }
 
-calc_new_pos <- function(mpdat) {
-  calc_new_pos_(mpdat$data$new_pos_unscaled, mpdat$data[[mpdat$chr.colname]], mpdat$chr.pos.info)
+#' Calculate new x-position of each point
+#'
+#' Calculate the actual x-positions of each point used for
+#' the manhattan plot. \code{MPdata} object contains the unscaled positions
+#' that has not been positioned according to the relative position and width
+#' of each chromosome.
+#'
+#' @param mpdata an \code{MPdata} object. 
+#'
+#' @details
+#' This is used calculate the actual positions used for the
+#' inside \code{manhattan_plot} function. It was designed this way should the 
+#' scaling and relative positioning of each chromosome be changed (e.g. gap
+#' between the )
+#'
+#' @return a \code{numeric} vector containing the scaled x-positions.
+#'
+#' @examples
+#'
+#' gwasdat <- data.frame(
+#'   "chromosome" = rep(1:5, each = 30),
+#'   "position" = c(replicate(5, sample(1:300, 30))),
+#'   "pvalue" = rbeta(150, 1, 1)^5
+#' )
+#'
+#' mpdata <- manhattan_data_preprocess(
+#'   gwasdat, pval.colname = "pvalue", chr.colname = "chromosome", pos.colname = "position",
+#'   chr.order = as.character(1:5)
+#' )
+#'
+#' calc_new_pos(mpdata)
+#'
+#' @rdname calc_new_pos
+#' @export
+calc_new_pos <- function(mpdata) {
+  calc_new_pos_(mpdata$data$new_pos_unscaled, mpdata$data[[mpdata$chr.colname]], mpdata$chr.pos.info)
 }

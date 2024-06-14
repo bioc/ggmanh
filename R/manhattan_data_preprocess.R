@@ -87,13 +87,16 @@ manhattan_data_preprocess.default <- function(x, ...) stop("Provide a valid data
 #'   Defaults to 1000.
 #' @param thin.bins an integer. Number of bins to partition the data. Defaults to 200.
 #' @param pval.log.transform a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).
+#' @param chr.gap.scaling scaling factor for gap between chromosome if you desire to change it.
+#' This can also be set in \code{manhattan_plot}
 #' @importFrom ggplot2 waiver
 #' @export
 manhattan_data_preprocess.data.frame <- function(
   x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval",
-  chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL, chr.order = NULL,
-  signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-  thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE, ...
+  chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL,
+  chr.order = NULL, signif.col = NULL, chr.col = NULL, highlight.col = NULL,
+  preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200,
+  pval.log.transform = TRUE, chr.gap.scaling = 1, ...
 ) {
 
   # what manhattan preprocess does:
@@ -107,8 +110,11 @@ manhattan_data_preprocess.data.frame <- function(
     x = x, chromosome = chromosome, signif = signif, signif.col = signif.col,
     pval.colname = pval.colname, chr.colname = chr.colname,
     pos.colname = pos.colname, preserve.position = preserve.position, 
-    pval.log.transform = pval.log.transform
+    pval.log.transform = pval.log.transform, chr.gap.scaling = chr.gap.scaling
   )
+  
+  # update chromosome gap variable if it changed
+  chr.gap.scaling <- preprocess_arg_check_out$chr.gap.scaling
 
   thin <- set_thin_logical(thin, chromosome)
 
@@ -184,7 +190,7 @@ manhattan_data_preprocess.data.frame <- function(
   }
 
   # fix certain widths for each chromosome, and gap for in between chromosomes
-  chr.pos.info <- get_chr_pos_info(chr_width = chr_width, chr_gap_scaling = 1)
+  chr.pos.info <- get_chr_pos_info(chr_width = chr_width, chr_gap_scaling = chr.gap.scaling)
 
   # thin data points if it set to true
   if (thin) {
@@ -219,7 +225,7 @@ setMethod(
   function(
     x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-    thin.n = 100, thin.bins = 200, pval.log.transform = TRUE, ...
+    thin.n = 100, thin.bins = 200, pval.log.transform = TRUE, chr.gap.scaling = 1, ...
   ) {
     grdat <- as.data.frame(x)
     grdat$pos <- (grdat$start + grdat$end) %/% 2
@@ -231,7 +237,7 @@ setMethod(
       grdat, chromosome = chromosome, signif = signif, pval.colname = pval.colname,
       chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = highlight.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n, ...
+      thin.n = thin.n, chr.gap.scaling = 1, ...
     )
   }
 )
