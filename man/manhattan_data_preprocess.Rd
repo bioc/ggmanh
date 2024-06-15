@@ -47,6 +47,7 @@ manhattan_data_preprocess(x, ...)
   thin.n = 100,
   thin.bins = 200,
   pval.log.transform = TRUE,
+  chr.gap.scaling = 1,
   ...
 )
 }

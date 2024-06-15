@@ -29,13 +29,13 @@ manhattan_plot.default(x, ...)
   rescale = TRUE,
   rescale.ratio.threshold = 5,
   signif.rel.pos = 0.2,
+  chr.gap.scaling = 1,
   color.by.highlight = FALSE,
   preserve.position = FALSE,
   thin = NULL,
   thin.n = 1000,
   thin.bins = 200,
   pval.log.transform = TRUE,
-  chr.gap.scaling = 1,
   plot.title = ggplot2::waiver(),
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
@@ -87,6 +87,7 @@ manhattan_plot.default(x, ...)
   rescale = TRUE,
   rescale.ratio.threshold = 5,
   signif.rel.pos = 0.2,
+  chr.gap.scaling = 1,
   color.by.highlight = FALSE,
   preserve.position = FALSE,
   thin = NULL,
@@ -159,6 +160,9 @@ on the data. More on this in details.}
 \item{signif.rel.pos}{a numeric between 0.1 and 0.9. If the plot is rescaled,
 where should the significance threshold be positioned?}
 
+\item{chr.gap.scaling}{a numeric. scaling factor for gap between chromosome if you desire to change it
+if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.}
+
 \item{color.by.highlight}{a logical. Should the points be colored based on a highlight column?}
 
 \item{preserve.position}{a logical. If \code{TRUE}, the width of each chromosome reflect the
@@ -174,9 +178,6 @@ Defaults to 1000.}
 \item{thin.bins}{an integer. Number of bins to partition the data. Defaults to 200.}
 
 \item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
-
-\item{chr.gap.scaling}{a numeric. scaling factor for gap between chromosome if you desire to change it
-if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.}
 
 \item{plot.title}{a character. Plot title}
 
