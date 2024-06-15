@@ -12,7 +12,7 @@ test_that("Check that good arguments are provided", {
 
   tmpdf <- df
   tmpdf[2,"B"] <- NA
-  expect_warning(manhattan_data_preprocess(tmpdf, pval.colname = "C", pos.colname = "A", chr.colname = "B"))
+  expect_warning(manhattan_data_preprocess.data.frame(tmpdf, pval.colname = "C", pos.colname = "A", chr.colname = "B"))
 
   tmpdf <- df
   tmpdf[3,"C"] <- NA
@@ -37,9 +37,9 @@ test_that("Check that preprocess works as intended", {
     x = df, pval.colname = "pval", chr.colname = "chr", pos.colname = "pos",
     chr.order = c('a','b','c'), preserve.position = TRUE, thin = FALSE
   )
-  lg <- 0.15 / 26 * 3 # gap between chromosomes - hard coded in manhattan_preprocess function
-  expect_equal(mpdat1$data$new_pos, c(0, 1/2, 1, 1 + lg, 2 + lg, 2 + lg*2 + 1/2))
-  expect_equal(mpdat2$data$new_pos, c(0.375, 1.125, 1.5, 0.4 + lg + 1.5, 1 + lg + 1.5, 0.5 + lg*2 + 2.5))
+  lg <- 0.15 / 24 * 3 # gap between chromosomes - hard coded in manhattan_preprocess function
+  expect_equal(calc_new_pos_(mpdat1$data$new_pos_unscaled, mpdat1$data$chr, mpdat1$chr.pos.info), c(0, 1/2, 1, 1 + lg, 2 + lg, 2 + lg*2 + 1/2))
+  expect_equal(calc_new_pos_(mpdat2$data$new_pos, mpdat2$data$chr, mpdat2$chr.pos.info), c(0.375, 1.125, 1.5, 0.4 + lg + 1.5, 1 + lg + 1.5, 0.5 + lg*2 + 2.5))
   expect_equal(mpdat1$data$pval, mpdat2$data$pval)
   expect_equal(mpdat1$data$pval, c(0.05,0.05,0.0005,0.000005,0.005,0.0005))
 })

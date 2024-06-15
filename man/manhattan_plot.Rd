@@ -29,6 +29,7 @@ manhattan_plot.default(x, ...)
   rescale = TRUE,
   rescale.ratio.threshold = 5,
   signif.rel.pos = 0.2,
+  chr.gap.scaling = 1,
   color.by.highlight = FALSE,
   preserve.position = FALSE,
   thin = NULL,
@@ -56,6 +57,7 @@ manhattan_plot.default(x, ...)
   rescale = TRUE,
   rescale.ratio.threshold = 5,
   signif.rel.pos = 0.2,
+  chr.gap.scaling = NULL,
   color.by.highlight = FALSE,
   label.colname = NULL,
   x.label = "Chromosome",
@@ -85,6 +87,7 @@ manhattan_plot.default(x, ...)
   rescale = TRUE,
   rescale.ratio.threshold = 5,
   signif.rel.pos = 0.2,
+  chr.gap.scaling = 1,
   color.by.highlight = FALSE,
   preserve.position = FALSE,
   thin = NULL,
@@ -156,6 +159,9 @@ on the data. More on this in details.}
 
 \item{signif.rel.pos}{a numeric between 0.1 and 0.9. If the plot is rescaled,
 where should the significance threshold be positioned?}
+
+\item{chr.gap.scaling}{a numeric. scaling factor for gap between chromosome if you desire to change it
+if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.}
 
 \item{color.by.highlight}{a logical. Should the points be colored based on a highlight column?}
 

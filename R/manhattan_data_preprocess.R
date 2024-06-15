@@ -87,13 +87,16 @@ manhattan_data_preprocess.default <- function(x, ...) stop("Provide a valid data
 #'   Defaults to 1000.
 #' @param thin.bins an integer. Number of bins to partition the data. Defaults to 200.
 #' @param pval.log.transform a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).
+#' @param chr.gap.scaling scaling factor for gap between chromosome if you desire to change it.
+#' This can also be set in \code{manhattan_plot}
 #' @importFrom ggplot2 waiver
 #' @export
 manhattan_data_preprocess.data.frame <- function(
   x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval",
-  chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL, chr.order = NULL,
-  signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-  thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE, ...
+  chr.colname = "chr", pos.colname = "pos", highlight.colname = NULL,
+  chr.order = NULL, signif.col = NULL, chr.col = NULL, highlight.col = NULL,
+  preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200,
+  pval.log.transform = TRUE, chr.gap.scaling = 1, ...
 ) {
 
   # what manhattan preprocess does:
@@ -107,8 +110,11 @@ manhattan_data_preprocess.data.frame <- function(
     x = x, chromosome = chromosome, signif = signif, signif.col = signif.col,
     pval.colname = pval.colname, chr.colname = chr.colname,
     pos.colname = pos.colname, preserve.position = preserve.position, 
-    pval.log.transform = pval.log.transform
+    pval.log.transform = pval.log.transform, chr.gap.scaling = chr.gap.scaling
   )
+  
+  # update chromosome gap variable if it changed
+  chr.gap.scaling <- preprocess_arg_check_out$chr.gap.scaling
 
   thin <- set_thin_logical(thin, chromosome)
 
@@ -125,6 +131,7 @@ manhattan_data_preprocess.data.frame <- function(
 
   # subset by chromosome if chromosome is specified
   if (!is.null(chromosome)) {
+    valid_chr(x, chromosome, chr.colname)
     x <- x[x[[chr.colname]] == chromosome,]
   }
 
@@ -161,30 +168,29 @@ manhattan_data_preprocess.data.frame <- function(
     chr_width <- table(x[[chr.colname]])
     chr_width <- as.numeric(chr_width); names(chr_width) <- chr.order
     chr_width <- chr_width / sum(chr_width) * nchr
-
-    new_pos <-
+    
+    # this is the new position for each marker that is not scaled
+    # or positioned (respective to chromosome)
+    x$new_pos_unscaled <-
       unlist(
         tapply(x[[pos.colname]], x[[chr.colname]], FUN = function(y) sequence_along_chr_scaled(y), simplify = FALSE),
-        use.names = FALSE) * unname(chr_width[as.character(x[[chr.colname]])])
+        use.names = FALSE)
 
   } else {
     # all chromsomes have equal length & all variants are equally spaced
     chr_width <- rep(1, nchr)
     names(chr_width) <- chr.order
 
-    new_pos <-
+    # this is the new position for each marker that is not scaled
+    # or positioned (respective to chromosome)
+    x$new_pos_unscaled <-
       unlist(
         tapply(x[[pos.colname]], x[[chr.colname]], FUN = function(y) sequence_along_chr_unscaled(y), simplify = FALSE),
-        use.names = FALSE) * unname(chr_width[as.character(x[[chr.colname]])])
+        use.names = FALSE)
   }
 
   # fix certain widths for each chromosome, and gap for in between chromosomes
-  lg <- 0.15 / 26 * nchr # gap between chromosome (should be robust with different lengths of chromosme)
-  start_pos <- c(0, cumsum(chr_width)[-nchr]) + ((1:nchr - 1) * lg)
-  names(start_pos) <- chr.order # starting x-coordinate for each chr
-  end_pos <- start_pos + chr_width # ending x-coordinate for each chr
-  center_pos <- (start_pos + end_pos) / 2 # middle x-coordinate for each chr... used for x axis labelling
-  x$new_pos <- new_pos + start_pos[as.character(x[[chr.colname]])]
+  chr.pos.info <- get_chr_pos_info(chr_width = chr_width, chr_gap_scaling = chr.gap.scaling)
 
   # thin data points if it set to true
   if (thin) {
@@ -194,10 +200,7 @@ manhattan_data_preprocess.data.frame <- function(
   # Create MPdata Class
   mpdata <- list(
     data = x,
-    chr_width = chr_width,
-    start_pos = start_pos,
-    center_pos = center_pos,
-    end_pos = end_pos,
+    chr.pos.info = chr.pos.info,
     signif = signif,
     signif.col = signif.col,
     chr.col = chr.col,
@@ -205,7 +208,7 @@ manhattan_data_preprocess.data.frame <- function(
     highlight.col = highlight.col,
     chr.labels = chr.order,
     chr.colname = chr.colname,
-    pos.colname = "new_pos",
+    pos.colname = "new_pos_unscaled",
     true.pos.colname = pos.colname,
     pval.colname = pval.colname
   )
@@ -222,7 +225,7 @@ setMethod(
   function(
     x, chromosome = NULL, signif = c(5e-8, 1e-5), pval.colname = "pval", highlight.colname = NULL, chr.order = NULL,
     signif.col = NULL, chr.col = NULL, highlight.col = NULL, preserve.position = FALSE, thin = NULL,
-    thin.n = 100, thin.bins = 200, pval.log.transform = TRUE, ...
+    thin.n = 100, thin.bins = 200, pval.log.transform = TRUE, chr.gap.scaling = 1, ...
   ) {
     grdat <- as.data.frame(x)
     grdat$pos <- (grdat$start + grdat$end) %/% 2
@@ -234,7 +237,7 @@ setMethod(
       grdat, chromosome = chromosome, signif = signif, pval.colname = pval.colname,
       chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = highlight.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n, ...
+      thin.n = thin.n, chr.gap.scaling = 1, ...
     )
   }
 )

@@ -2,6 +2,7 @@
 % Please edit documentation in R/ggmanh.R
 \docType{package}
 \name{ggmanh}
+\alias{ggmanh-package}
 \alias{ggmanh}
 \title{ggmanh: A package for visualization of GWAS results.}
 \description{
@@ -17,4 +18,18 @@ customize the plot without having the process the GWAS summary data over and ove
 Currently, \code{data.frame} and \code{GRanges} from \code{GenomicRanges} are supported.
 
 A vignette detailing the usage of the package is accessible by \code{vignette("ggmanh")}
+}
+\author{
+\strong{Maintainer}: John Lee \email{swannyy.stat@gmail.com}
+
+Authors:
+\itemize{
+  \item John Lee \email{john.lee@abbvie.com} (AbbVie)
+}
+
+Other contributors:
+\itemize{
+  \item Xiuwen Zheng \email{xiuwen.zheng@abbvie.com} [contributor, data contributor]
+}
+
 }

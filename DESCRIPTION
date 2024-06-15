@@ -1,6 +1,6 @@
 Package: ggmanh
 Title: Visualization Tool for GWAS Result
-Version: 1.9.5
+Version: 1.9.6
 Authors@R: c(
         person(given = "John", family = "Lee", role = c("aut", "cre"), email = "swannyy.stat@gmail.com"),
         person(given = "John", family = "Lee", role = c("aut"), email = "john.lee@abbvie.com", comment = "AbbVie"),
@@ -13,7 +13,7 @@ biocViews: Visualization, GenomeWideAssociation, Genetics
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Imports: 
     gdsfmt,
     ggrepel,
