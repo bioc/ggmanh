@@ -225,6 +225,9 @@ valid_colors <- function(clr) {
 
 # create spaced points of length(pos)
 sequence_along_chr_scaled <- function(pos) {
+  if (any(pos < 0)) {
+    pos <- pos - min(pos)
+  }
   if (max(pos) != 0) {
     return(pos / max(pos))
   } else {
