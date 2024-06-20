@@ -22,7 +22,19 @@ get_transform <- function(
 
   # highest value capped by a factor of 10
   max_tick <- ceiling(max(assoc[[pval.colname]])/10)*10
-
+  
+  # levels breaks function to get the appropriate breaks
+  # lower half still increments by 2
+  breaks_upper <- scales::breaks_extended(10, only.loose = TRUE)(c(jump, max_tick))
+  breaks_upper <- breaks_upper[breaks_upper > jump]
+  
+  if (max(breaks_upper) < max_tick) {
+    breaks_upper <- c(breaks_upper, max(breaks_upper) + breaks_upper[2] - breaks_upper[1])
+  }
+  
+  max_tick <- max(breaks_upper)
+  breaks_manh <- c(seq(0, jump, 2), breaks_upper)
+  
   # calculate the scales for bottom & top portion
   scale_1_ticks <- ticks * jump.rel.pos
   scale_unit_1 <- jump / scale_1_ticks
@@ -34,30 +46,7 @@ get_transform <- function(
   scale_inverse <- function(x) {
     ifelse(x <= jump/scale_unit_1, x * scale_unit_1, (x - jump/scale_unit_1) * scale_unit_2 + jump)
   }
-
-  # calculate breaks for y axis
-  second_break_interval <- ifelse(max_tick <= 50, 10, (((max_tick - jump) / ((100 - scale_1_ticks) %/% 10)) %/% 10) * 10)
-  second_break_interval <- if (second_break_interval == 0) 10 else second_break_interval
-  breaks_manh <- c(seq(0, jump, 2), round(seq(jump, scale_inverse(ticks), by = second_break_interval)[-1], -1))
-
-  # the new break's max may the match the max tick. Add the new break and correct the scaling
-  if (max(breaks_manh) < max_tick) {
-    breaks_manh <- c(breaks_manh, max(breaks_manh) + second_break_interval)
-    max_tick <- max(breaks_manh)
-
-    # re-calculate the scales for bottom & top portion
-    scale_1_ticks <- ticks * jump.rel.pos
-    scale_unit_1 <- jump / scale_1_ticks
-    scale_unit_2 <- (max_tick - jump) / (ticks - scale_1_ticks)
-
-    scale_transform <- function(x) {
-      ifelse(x <= jump, x / scale_unit_1, (x - jump) / scale_unit_2 + jump/scale_unit_1)
-    }
-    scale_inverse <- function(x) {
-      ifelse(x <= jump/scale_unit_1, x * scale_unit_1, (x - jump/scale_unit_1) * scale_unit_2 + jump)
-    }
-  }
-
+  
   # remove y-axis tick @ the jump
   y_axis_ticks_linetype <- rep("solid", length(breaks_manh))
   y_axis_ticks_linetype[breaks_manh == jump] <- "blank"
