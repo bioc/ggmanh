@@ -352,10 +352,16 @@ get_chr_pos_info <- function(chr_width, chr_gap_scaling = 1) {
   return(pos_info_list)
 }
 
-calc_new_pos_ <- function(new_pos_unscaled, chr, chr_pos_info) {
-  new_pos_unscaled * 
-    unname(chr_pos_info$chr_width[as.character(chr)]) +
-    unname(chr_pos_info$start_pos[as.character(chr)])
+calc_new_pos_ <- function(new_pos_unscaled, chr, chr_pos_info, rescale = TRUE, reposition = TRUE) {
+  if (rescale) {
+    new_pos_unscaled <- new_pos_unscaled * 
+      unname(chr_pos_info$chr_width[as.character(chr)])
+  }
+  if (reposition) {
+    new_pos_unscaled <- new_pos_unscaled +
+      unname(chr_pos_info$start_pos[as.character(chr)])
+  }
+  return(new_pos_unscaled)
 }
 
 #' Calculate new x-position of each point
@@ -394,4 +400,18 @@ calc_new_pos_ <- function(new_pos_unscaled, chr, chr_pos_info) {
 #' @export
 calc_new_pos <- function(mpdata) {
   calc_new_pos_(mpdata$data$new_pos_unscaled, mpdata$data[[mpdata$chr.colname]], mpdata$chr.pos.info)
+}
+
+get_background_panel_df <- function(chr_pos_info, bg_colors = c("grey90", "white")) {
+  chr_gap_center <- chr_pos_info$end_pos + chr_pos_info$chr_gap/2
+  chr_gap_center <- chr_gap_center[-length(chr_gap_center)]
+  panel_pos_df <- data.frame(
+    xmin = c(-Inf, chr_gap_center),
+    xmax = c(chr_gap_center, Inf),
+    ymin = -Inf,
+    ymax = Inf,
+    panel_col = rep(bg_colors, length.out = length(chr_pos_info$chr_width))
+  )
+  
+  return(panel_pos_df)
 }
