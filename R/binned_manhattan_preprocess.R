@@ -12,8 +12,17 @@ binned_manhattan_preprocess.default <- function(x, ...) stop("Provide a valid da
 #' @method binned_manhattan_preprocess MPdata
 #' @export
 binned_manhattan_preprocess.MPdata <- function(
-  x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1
+  x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1, 
+  summarise_expression_list = NULL
 ) {
+  
+  if (!is.null(summarise_expression_list)) {
+    if (!is.list(summarise_expression_list)) {
+      stop("summarise_expression_list should be a list.")
+    }
+    check_formula_list(colnames(x$data), summarise_expression_list)
+  }
+  
   # calculate the lengths of chromosome
   chr_width <- x$chr.pos.info$chr_width
   longest_chr <- which.max(chr_width)
@@ -41,7 +50,7 @@ binned_manhattan_preprocess.MPdata <- function(
   
   new_data <- x$data |>
     # determine which bin each observation falls under
-    mutate(
+    dplyr::mutate(
       .nth_bin_x = cut(
         new_pos_unscaled, breaks = seq(0, max(new_pos_unscaled), by = h_length),
         labels = FALSE, include.lowest = TRUE
@@ -51,12 +60,20 @@ binned_manhattan_preprocess.MPdata <- function(
         labels = FALSE, include.lowest = TRUE
       )
     ) |>
-    # count the number of observations in each bin
-    group_by(.data[[x$chr.colname]], .nth_bin_x, .nth_bin_y) |>
-    summarise(
-      .n_points = n(),
-      .groups = "drop"
-    )
+    # group by chromosome, x bin, and y bin
+    dplyr::group_by(.data[[x$chr.colname]], .nth_bin_x, .nth_bin_y)
+  
+  # calculate summary for each bin 
+  if (is.null(summarise_expression_list)) {
+    summarise_expression_list <- list()
+  }
+  
+  summarise_expression_list <- append(
+    list(.n_points ~ n()),
+    summarise_expression_list
+  )
+  
+  new_data <- summarise_with_list(new_data, summarise_expression_list)
   
   bin_info <- list(
     n_blocks = n_blocks, # number of blocks (horizontally) for each chromosome
@@ -67,7 +84,7 @@ binned_manhattan_preprocess.MPdata <- function(
   
   # calculate xmin, xmax, ymin, ymax for each block for geom_rect
   new_data <- new_data |>
-    mutate(
+    dplyr::mutate(
       .xmin = new_chr_pos_info$start_pos[as.character(.data[[x$chr.colname]])] + 
         bin_info$h_length * (.nth_bin_x-1),
       .xmax = .xmin + bin_info$h_length,
@@ -97,7 +114,7 @@ binned_manhattan_preprocess.data.frame <- function(
   x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
   chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
   signif.col = NULL, preserve.position = TRUE,
-  pval.log.transform = TRUE, ...
+  pval.log.transform = TRUE, summarise_expression_list = NULL, ...
 ) {
   
   mpdat <- manhattan_data_preprocess(
@@ -108,6 +125,8 @@ binned_manhattan_preprocess.data.frame <- function(
     thin = FALSE, ...
   )
   
-  return(binned_manhattan_preprocess(mpdat, bins_x = bins_x, bins_y = bins_y, chr.gap.scaling = chr.gap.scaling))
+  return(binned_manhattan_preprocess(
+    mpdat, bins_x = bins_x, bins_y = bins_y, chr.gap.scaling = chr.gap.scaling,
+    summarise_expression_list = summarise_expression_list)
+  )
 }
-

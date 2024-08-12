@@ -415,3 +415,36 @@ get_background_panel_df <- function(chr_pos_info, bg_colors = c("grey90", "white
   
   return(panel_pos_df)
 }
+
+
+# utility function for converting a list of formulas to a list of expressions
+# this is used for allowing the user to calculate custom summary function
+# for each bin
+# convert list of formula  to list of expressions
+convert_formula_list <- function(lst) {
+  expr_list <- alist()
+  for (i in 1:length(lst)) {
+    expr_list[[rlang::f_lhs(lst[[i]])]] <- rlang::f_rhs(lst[[i]])
+  }
+  return(expr_list)
+}
+
+# use summarise function with a list of formulas
+summarise_with_list <- function(dat, formula_list) {
+  do.call(
+    function(...) dplyr::summarise(dat, ..., .groups = "drop"),
+    convert_formula_list(formula_list)
+  )
+}
+
+check_formula_list <- function(dat_cnames, lst) {
+  for (i in 1:length(lst)) {
+    if (!rlang::is_formula(lst[[i]])) {
+      stop("All elements in the expression list should be a formula.")
+    } else if (length(lst[[i]]) != 3) {
+      stop("All formulas in the expression list should be two sided.")
+    } else if (!all(all.vars(lst[[i]][-2]) %in% dat_cnames)) {
+      stop("some variables in the RHS do not exist.\n", '  formula: ', deparse1(lst[[i]]))
+    }
+  }
+}

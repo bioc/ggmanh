@@ -18,6 +18,7 @@ Imports:
     gdsfmt,
     ggrepel,
     grDevices,
+    paletteer,
     RColorBrewer,
     rlang,
     scales,
