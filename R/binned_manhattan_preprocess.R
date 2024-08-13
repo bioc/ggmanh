@@ -37,6 +37,17 @@ binned_manhattan_preprocess.MPdata <- function(
   y_breaks <- seq(from = 0, to = ceiling(max(x$data[[x$pval.colname]])), length.out = bins_y)
   v_length <- ceiling(max(x$data[[x$pval.colname]])) / (bins_y - 1)
   
+  # set block height to end exactly at the significance threshold
+  tmp <- round(-log10(x$signif[1]) / v_length)
+  if (tmp < 1) {
+    tmp <- 1
+  }
+  v_length <- -log10(x$signif[1]) / tmp
+  y_breaks <- seq(from = 0, to = ceiling(max(x$data[[x$pval.colname]])), by = v_length)
+  if (tail(y_breaks, 1) < ceiling(max(x$data[[x$pval.colname]]))) {
+    y_breaks <- c(y_breaks, tail(y_breaks, 1) + v_length)
+  }
+  
   # get chromosome position info
   new_chr_pos_info <- get_chr_pos_info(
     chr_width = n_blocks * h_length,
