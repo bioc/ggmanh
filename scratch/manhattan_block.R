@@ -22,13 +22,20 @@ dat <- read.table("../GCST90018926_buildGRCh37.tsv", sep = "\t", header = TRUE)
 #   chr.order = c(1:22,"X"), thin = FALSE, preserve.position = TRUE
 # )
 
+x <- manhattan_data_preprocess(
+  dat, pval.colname = "p_value", chr.colname = "chromosome", pos.colname = "base_pair_location",
+  chr.order = c(1:22, "X"),
+  signif.col = NULL, preserve.position = TRUE
+)
+
 x <- binned_manhattan_preprocess.data.frame(
   dat, bins_x = 15, bins_y = 70, pval.colname = "p_value",
   chr.colname = "chromosome", pos.colname = "base_pair_location", chr.order = c(1:22,"X"),
   signif.col = NULL, preserve.position = TRUE, pval.log.transform = TRUE,
   chr.gap.scaling = 0.3, summarise_expression_list = list(
     abs_max_beta ~ max(abs(beta)),
-    mean_beta ~ mean(beta)
+    mean_beta ~ mean(beta),
+    main_direction ~ ifelse(sum(beta > 0) > sum(beta < 0), "positive", "negative")
   )
 )
 
@@ -47,12 +54,11 @@ x2 <- binned_manhattan_preprocess.data.frame(
 # x2 <- binned_manhattan_preprocess.MPdata(
 #   mpdat, bins_x = 40, bins_y = 100
 # )
-x$data <- x$data |>
-  mutate(abs_max_beta_signif = ifelse(.ymax < -log10(x$signif[1]), 0, abs_max_beta))
+
 binned_manhattan_plot.MPdataBinned(
-  x, highlight.counts = FALSE, highlight.col = "mean_beta", 
-  bin.palette = "scico::roma", bin.alpha = 1, bin.outline = TRUE,
-  bin.outline.alpha = 0.2
+  x, highlight.counts = FALSE, highlight.colname = "abs_max_beta", 
+  bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
+  bin.outline.alpha = 0.2, nonsignif_default = 0
 )
 binned_manhattan_plot.MPdataBinned(x2)
 
