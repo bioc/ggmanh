@@ -4,7 +4,27 @@
 \alias{binned_manhattan_plot.MPdataBinned}
 \title{Preprocess GWAS Result for Binned Manhattan Plot}
 \usage{
-\method{binned_manhattan_plot}{MPdataBinned}(x, ...)
+\method{binned_manhattan_plot}{MPdataBinned}(
+  x,
+  outfn = NULL,
+  signif.lwd = 1,
+  bin.outline = FALSE,
+  bin.outline.alpha = 0.2,
+  highlight.colname = NULL,
+  highlight.counts = TRUE,
+  bin.palette = "viridis::plasma",
+  bin.alpha = 0.9,
+  palette.direction = 1,
+  nonsignif_default = NULL,
+  show.legend = TRUE,
+  background.col = c("grey90", "white"),
+  background.alpha = 0.7,
+  plot.title = ggplot2::waiver(),
+  plot.subtitle = ggplot2::waiver(),
+  plot.width = 10,
+  plot.height = 5,
+  ...
+)
 }
 \description{
 Preprocess GWAS Result for Binned Manhattan Plot

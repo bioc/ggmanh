@@ -113,7 +113,7 @@ Preprocesses a result from Genome Wide Association Study
 before making a manhattan plot.
 It accepts a \code{data.frame}, which at bare minimum should
 contain a chromosome, position, and p-value.
-Additional options, such as chromosome color, label colum names,
+Additional options, such as chromosome color, label column names,
 and colors for specific variants, are provided here.
 }
 \details{

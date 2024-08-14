@@ -3,31 +3,69 @@
 \name{binned_manhattan_preprocess}
 \alias{binned_manhattan_preprocess}
 \alias{binned_manhattan_preprocess.default}
-\alias{binned_manhattan_preprocess.MPdata}
 \alias{binned_manhattan_preprocess.data.frame}
+\alias{binned_manhattan_preprocess.MPdata}
 \title{Preprocess GWAS Result for Binned Manhattan Plot}
 \usage{
 binned_manhattan_preprocess(x, ...)
 
 \method{binned_manhattan_preprocess}{default}(x, ...)
 
-\method{binned_manhattan_preprocess}{MPdata}(x, bins_x = 20, bins_y = 100)
-
 \method{binned_manhattan_preprocess}{data.frame}(
   x,
   bins_x = 20,
   bins_y = 100,
+  chr.gap.scaling = 1,
   signif = c(5e-08, 1e-05),
   pval.colname = "pval",
   chr.colname = "chr",
   pos.colname = "pos",
   chr.order = NULL,
   signif.col = NULL,
-  preserve.position = FALSE,
+  preserve.position = TRUE,
   pval.log.transform = TRUE,
+  summarise_expression_list = NULL,
   ...
 )
+
+\method{binned_manhattan_preprocess}{MPdata}(
+  x,
+  bins_x = 20,
+  bins_y = 100,
+  chr.gap.scaling = 1,
+  summarise_expression_list = NULL
+)
+}
+\arguments{
+\item{x}{a data frame or any other extension of a data frame. It can also be a \code{MPdata} object.}
+
+\item{...}{Ignored}
 }
 \description{
-Preprocess GWAS Result for Binned Manhattan Plot
+Preprocess a result from Genome Wide Association Study before creating a
+binned manhattan plot. Works similar to \code{\link{manhattan_data_preprocess}}.
+Returns a \code{MPdataBinned} object. It can be created using a \code{data.frame}
+or a \code{MPdata} object.
+}
+\details{
+If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
+and then builds \code{MPdataBinned} S3 object.
+
+New positions relative to the plot are first calculated via \code{\link{manhattan_data_preprocess}}.
+Then, the data is binned into blocks. \code{bins_x} indicates number of blocks
+allocated to the chromsome with the widest width. Then the number of blocks
+for other chromosomes is proportional to the widest chromosome.
+\code{bins_y} indicates the number of blocks allocated to the y-axis.
+The number maybe slightly adjusted to have the block height end
+exactly at the significance threshold.
+
+Since the points are aggregated into each bin, the function also gives the
+user to freely specify a list of expressions to summarise the data in each bin
+through \code{summarise_expression_list}. This argument takes a list of
+two-sided formulas, where the left side is the name of the new column and
+the right side is the expression to calculate the column. This expression is
+then passed to \code{\link{dplyr::summarise}}.
+For example, to calculate the mean, min, max of \code{beta} in each bin,
+\code{summarise_expression_list} would be
+\code{list(mean_beta ~ mean(beta), min_beta ~ min(beta), max_beta ~ max(beta))}
 }

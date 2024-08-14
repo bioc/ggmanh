@@ -1,5 +1,35 @@
 #' Preprocess GWAS Result for Binned Manhattan Plot
 #' 
+#' Preprocess a result from Genome Wide Association Study before creating a
+#' binned manhattan plot. Works similar to \code{\link{manhattan_data_preprocess}}.
+#' Returns a \code{MPdataBinned} object. It can be created using a \code{data.frame}
+#' or a \code{MPdata} object.
+#' 
+#' @param x a data frame or any other extension of a data frame. It can also be a \code{MPdata} object.
+#' @param ... Ignored
+#' 
+#' @details If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
+#' and then builds \code{MPdataBinned} S3 object.
+#'
+#' New positions relative to the plot are first calculated via \code{\link{manhattan_data_preprocess}}.
+#' Then, the data is binned into blocks. \code{bins_x} indicates number of blocks
+#' allocated to the chromsome with the widest width. The number of blocks 
+#' for other chromosomes is proportional to the widest chromosome.
+#' \code{bins_y} indicates the number of blocks allocated to the y-axis.
+#' The number may be slightly adjusted to have the block height end
+#' exactly at the significance threshold.
+#'
+#' Since the points are aggregated into each bin, the function also gives the 
+#' user to freely specify a list of expressions to summarise the data in each bin
+#' through \code{summarise_expression_list}. This argument takes a list of 
+#' two-sided formulas, where the left side is the name of the new column and 
+#' the right side is the expression to calculate the column. This expression is 
+#' then passed to \code{\link{dplyr::summarise}}.
+#' For example, to calculate the mean, min, max of \code{beta} in each bin,
+#' \code{summarise_expression_list} would be 
+#' \code{list(mean_beta ~ mean(beta), min_beta ~ min(beta), max_beta ~ max(beta))}
+#' 
+#' 
 #' @export
 binned_manhattan_preprocess <- function(x, ...) UseMethod("binned_manhattan_preprocess")
 
@@ -7,6 +37,30 @@ binned_manhattan_preprocess <- function(x, ...) UseMethod("binned_manhattan_prep
 #' @method binned_manhattan_preprocess default
 #' @export
 binned_manhattan_preprocess.default <- function(x, ...) stop("Provide a valid data.frame, MPdata object, or GRanges object to preprocess.")
+
+#' @rdname binned_manhattan_preprocess
+#' @method binned_manhattan_preprocess data.frame
+#' @export
+binned_manhattan_preprocess.data.frame <- function(
+    x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+    chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
+    signif.col = NULL, preserve.position = TRUE,
+    pval.log.transform = TRUE, summarise_expression_list = NULL, ...
+) {
+  
+  mpdat <- manhattan_data_preprocess(
+    x = x, chromosome = NULL, signif = signif, pval.colname = pval.colname,
+    chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = NULL,
+    chr.order = chr.order, signif.col = signif.col, chr.col = NULL, highlight.col = NULL, 
+    preserve.position = preserve.position, pval.log.transform = pval.log.transform, 
+    thin = FALSE, ...
+  )
+  
+  return(binned_manhattan_preprocess(
+    mpdat, bins_x = bins_x, bins_y = bins_y, chr.gap.scaling = chr.gap.scaling,
+    summarise_expression_list = summarise_expression_list)
+  )
+}
 
 #' @rdname binned_manhattan_preprocess
 #' @method binned_manhattan_preprocess MPdata
@@ -116,28 +170,4 @@ binned_manhattan_preprocess.MPdata <- function(
   class(mpdat_binned) <- c("MPdataBinned")
   
   return(mpdat_binned)
-}
-
-#' @rdname binned_manhattan_preprocess
-#' @method binned_manhattan_preprocess data.frame
-#' @export
-binned_manhattan_preprocess.data.frame <- function(
-  x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
-  chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
-  signif.col = NULL, preserve.position = TRUE,
-  pval.log.transform = TRUE, summarise_expression_list = NULL, ...
-) {
-  
-  mpdat <- manhattan_data_preprocess(
-    x = x, chromosome = NULL, signif = signif, pval.colname = pval.colname,
-    chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = NULL,
-    chr.order = chr.order, signif.col = signif.col, chr.col = NULL, highlight.col = NULL, 
-    preserve.position = preserve.position, pval.log.transform = pval.log.transform, 
-    thin = FALSE, ...
-  )
-  
-  return(binned_manhattan_preprocess(
-    mpdat, bins_x = bins_x, bins_y = bins_y, chr.gap.scaling = chr.gap.scaling,
-    summarise_expression_list = summarise_expression_list)
-  )
 }
