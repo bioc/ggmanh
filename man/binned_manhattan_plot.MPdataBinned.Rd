@@ -17,6 +17,7 @@
   palette.direction = 1,
   nonsignif_default = NULL,
   show.legend = TRUE,
+  legend.title = NULL,
   background.col = c("grey90", "white"),
   background.alpha = 0.7,
   plot.title = ggplot2::waiver(),

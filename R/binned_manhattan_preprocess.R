@@ -3,7 +3,7 @@
 #' Preprocess a result from Genome Wide Association Study before creating a
 #' binned manhattan plot. Works similar to \code{\link{manhattan_data_preprocess}}.
 #' Returns a \code{MPdataBinned} object. It can be created using a \code{data.frame}
-#' or a \code{MPdata} object.
+#' or a \code{MPdata} object. Go to details to read how to use \code{summarise_expression_list}.
 #' 
 #' @param x a data frame or any other extension of a data frame. It can also be a \code{MPdata} object.
 #' @param ... Ignored
@@ -11,23 +11,52 @@
 #' @details If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
 #' and then builds \code{MPdataBinned} S3 object.
 #'
-#' New positions relative to the plot are first calculated via \code{\link{manhattan_data_preprocess}}.
-#' Then, the data is binned into blocks. \code{bins_x} indicates number of blocks
+#' Positions of each point relative to the plot are first calculated 
+#' via \code{\link{manhattan_data_preprocess}}.
+#' Then the data is binned into blocks. \code{bins_x} indicates number of blocks
 #' allocated to the chromsome with the widest width. The number of blocks 
 #' for other chromosomes is proportional to the widest chromosome.
 #' \code{bins_y} indicates the number of blocks allocated to the y-axis.
 #' The number may be slightly adjusted to have the block height end
 #' exactly at the significance threshold.
 #'
-#' Since the points are aggregated into each bin, the function also gives the 
-#' user to freely specify a list of expressions to summarise the data in each bin
-#' through \code{summarise_expression_list}. This argument takes a list of 
+#' Since points are aggregated into bins, users have the choice
+#' to freely specify expressions to summarise the data for each bin
+#' through \code{summarise_expression_list} argument. This argument takes a list of 
 #' two-sided formulas, where the left side is the name of the new column and 
 #' the right side is the expression to calculate the column. This expression is 
 #' then passed to \code{\link{dplyr::summarise}}.
-#' For example, to calculate the mean, min, max of \code{beta} in each bin,
-#' \code{summarise_expression_list} would be 
-#' \code{list(mean_beta ~ mean(beta), min_beta ~ min(beta), max_beta ~ max(beta))}
+#' For example, to calculate the mean, min, max of a column named \code{beta} in each bin,
+#' \code{summarise_expression_list} arument would be 
+#' \preformatted{
+#' # inside binned_manhattan_preprocess function
+#' summarise_expression_list = list(
+#'   mean_beta ~ mean(beta),
+#'   min_beta ~ min(beta),
+#'   max_beta ~ max(beta)
+#' )
+#' }
+#' 
+#' @returns a MPdataBinned object. This object contains necessary components 
+#' for creating a binned manhattan plot.
+#' 
+#' @examples
+#' gwasdat <- data.frame(
+#'   "chromosome" = rep(1:5, each = 1500),
+#'   "position" = c(replicate(5, sample(1:15000, 30))),
+#'   "pvalue" = rbeta(7500, 1, 1)^5,
+#'   "beta" = rnorm(7500)
+#' )
+#' 
+#' tmp <- binned_manhattan_preprocess(
+#'   gwasdat, pval.colname = "pvalue", chr.colname = "chromosome",
+#'   pos.colname = "position", chr.order = as.character(1:5),
+#'   bins_x = 10, bins_y = 50,
+#'   summarise_expression_list = list(
+#'     mean_beta ~ mean(beta, na.rm = TRUE),
+#'     max_abs_beta ~ max(abs(beta, na.rm = TRUE))
+#'   )
+#' )
 #' 
 #' 
 #' @export
@@ -47,6 +76,14 @@ binned_manhattan_preprocess.data.frame <- function(
     signif.col = NULL, preserve.position = TRUE,
     pval.log.transform = TRUE, summarise_expression_list = NULL, ...
 ) {
+  
+  # verify summarise_expression_list integrity
+  if (!is.null(summarise_expression_list)) {
+    if (!is.list(summarise_expression_list)) {
+      stop("summarise_expression_list should be a list.")
+    }
+    check_formula_list(colnames(x), summarise_expression_list)
+  }
   
   mpdat <- manhattan_data_preprocess(
     x = x, chromosome = NULL, signif = signif, pval.colname = pval.colname,
@@ -70,11 +107,16 @@ binned_manhattan_preprocess.MPdata <- function(
   summarise_expression_list = NULL
 ) {
   
+  # verify summarise_expression_list integrity
   if (!is.null(summarise_expression_list)) {
     if (!is.list(summarise_expression_list)) {
       stop("summarise_expression_list should be a list.")
     }
     check_formula_list(colnames(x$data), summarise_expression_list)
+  }
+  
+  if (bins_x > 40 || bins_y > 100) {
+    message("Large number of bins may affect visibility of some variants in the plot.")
   }
   
   # calculate the lengths of chromosome

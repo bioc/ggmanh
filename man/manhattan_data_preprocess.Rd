@@ -105,8 +105,8 @@ Defaults to 1000.}
 This can also be set in \code{manhattan_plot}}
 }
 \value{
-a MPdata object. This object contains all the necessary info for constructing
-a manhattan plot.
+a MPdata object. This object contains all the necessary components
+for constructing a manhattan plot.
 }
 \description{
 Preprocesses a result from Genome Wide Association Study

@@ -7,8 +7,16 @@ binned_manhattan_plot <- function(x, ...) UseMethod("binned_manhattan_plot")
 #' 
 #' @export
 binned_manhattan_plot.MPdataBinned <- function(
-  x, outfn = NULL, signif.lwd = 1,
-  bin.outline = FALSE, bin.outline.alpha = 0.2,
+  # data
+  x, 
+  # output file name
+  outfn = NULL, 
+  # significance threshold line width
+  signif.lwd = 1,
+  # bin outline
+  bin.outline = FALSE,
+  bin.outline.alpha = 0.2,
+  # bin fill
   highlight.colname = NULL,
   highlight.counts = TRUE,
   bin.palette = "viridis::plasma",
@@ -16,9 +24,13 @@ binned_manhattan_plot.MPdataBinned <- function(
   palette.direction = 1,
   nonsignif_default = NULL,
   show.legend = TRUE,
+  legend.title = NULL,
+  # background
   background.col = c("grey90", "white"),
   background.alpha = 0.7,
-  plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(),
+  # plot title
+  plot.title = ggplot2::waiver(),
+  plot.subtitle = ggplot2::waiver(),
   plot.width = 10, plot.height = 5, 
   ...
 ) {
@@ -46,11 +58,21 @@ binned_manhattan_plot.MPdataBinned <- function(
     # if highlight.colname is specified, use the 
     # column to fill block
     
+    if (any(is.na(x$data[[highlight.colname]]))) {
+      warning("NA values found in highlight column. These bins may not show in the plot.")
+    }
+    
+    # set legend title if specified
+    if (is.null(legend.title) || is.na(legend.title)) {
+      legend.title <- waiver()
+    }
+    
     # different paletteer function is used depending on if the 
     # column type is categorical or numeric
     if (is.factor(x$data[[highlight.colname]]) | is.character(x$data[[highlight.colname]])) {
       fill_scale_definition <- list(
         paletteer::scale_fill_paletteer_d(
+          name = legend.title,
           palette = bin.palette,
           direction = palette.direction
         )
@@ -58,6 +80,7 @@ binned_manhattan_plot.MPdataBinned <- function(
     } else {
       fill_scale_definition <- list(
         paletteer::scale_fill_paletteer_c(
+          name = legend.title,
           palette = bin.palette,
           direction = palette.direction
         )
@@ -78,7 +101,8 @@ binned_manhattan_plot.MPdataBinned <- function(
         name = "# Points",
         trans = "log10",
         breaks = scales::breaks_log(n = 5),
-        palette = bin.palette
+        palette = bin.palette,
+        direction = palette.direction
       )
     )
     

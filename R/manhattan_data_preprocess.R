@@ -32,8 +32,8 @@
 #' with different graphic options, you have the choice to preprocess separately and
 #' then generate plots.
 #'
-#' @return a MPdata object. This object contains all the necessary info for constructing
-#'   a manhattan plot.
+#' @return a MPdata object. This object contains all the necessary components
+#' for constructing a manhattan plot.
 #'
 #' @examples
 #'
