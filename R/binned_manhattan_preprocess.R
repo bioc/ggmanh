@@ -5,18 +5,19 @@
 #' Returns a \code{MPdataBinned} object. It can be created using a \code{data.frame}
 #' or a \code{MPdata} object. Go to details to read how to use \code{summarise_expression_list}.
 #' 
-#' @param x a data frame or any other extension of a data frame. It can also be a \code{MPdata} object.
+#' @param x a \code{data frame} or any other extension of a data frame. It can also be a \code{MPdata} object.
 #' @param ... Ignored
+#' @inheritParams manhattan_data_preprocess
 #' 
 #' @details If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
 #' and then builds \code{MPdataBinned} S3 object.
 #'
 #' Positions of each point relative to the plot are first calculated 
 #' via \code{\link{manhattan_data_preprocess}}.
-#' Then the data is binned into blocks. \code{bins_x} indicates number of blocks
+#' Then the data is binned into blocks. \code{bins.x} indicates number of blocks
 #' allocated to the chromsome with the widest width. The number of blocks 
 #' for other chromosomes is proportional to the widest chromosome.
-#' \code{bins_y} indicates the number of blocks allocated to the y-axis.
+#' \code{bins.y} indicates the number of blocks allocated to the y-axis.
 #' The number may be slightly adjusted to have the block height end
 #' exactly at the significance threshold.
 #'
@@ -51,14 +52,16 @@
 #' tmp <- binned_manhattan_preprocess(
 #'   gwasdat, pval.colname = "pvalue", chr.colname = "chromosome",
 #'   pos.colname = "position", chr.order = as.character(1:5),
-#'   bins_x = 10, bins_y = 50,
+#'   bins.x = 10, bins.y = 50,
 #'   summarise_expression_list = list(
 #'     mean_beta ~ mean(beta, na.rm = TRUE),
 #'     max_abs_beta ~ max(abs(beta, na.rm = TRUE))
 #'   )
 #' )
 #' 
+#' print(tmp)
 #' 
+#' @rdname binned_manhattan_preprocess
 #' @export
 binned_manhattan_preprocess <- function(x, ...) UseMethod("binned_manhattan_preprocess")
 
@@ -67,44 +70,16 @@ binned_manhattan_preprocess <- function(x, ...) UseMethod("binned_manhattan_prep
 #' @export
 binned_manhattan_preprocess.default <- function(x, ...) stop("Provide a valid data.frame, MPdata object, or GRanges object to preprocess.")
 
-#' @rdname binned_manhattan_preprocess
-#' @method binned_manhattan_preprocess data.frame
-#' @export
-binned_manhattan_preprocess.data.frame <- function(
-    x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
-    chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
-    signif.col = NULL, preserve.position = TRUE,
-    pval.log.transform = TRUE, summarise_expression_list = NULL, ...
-) {
-  
-  # verify summarise_expression_list integrity
-  if (!is.null(summarise_expression_list)) {
-    if (!is.list(summarise_expression_list)) {
-      stop("summarise_expression_list should be a list.")
-    }
-    check_formula_list(colnames(x), summarise_expression_list)
-  }
-  
-  mpdat <- manhattan_data_preprocess(
-    x = x, chromosome = NULL, signif = signif, pval.colname = pval.colname,
-    chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = NULL,
-    chr.order = chr.order, signif.col = signif.col, chr.col = NULL, highlight.col = NULL, 
-    preserve.position = preserve.position, pval.log.transform = pval.log.transform, 
-    thin = FALSE, ...
-  )
-  
-  return(binned_manhattan_preprocess(
-    mpdat, bins_x = bins_x, bins_y = bins_y, chr.gap.scaling = chr.gap.scaling,
-    summarise_expression_list = summarise_expression_list)
-  )
-}
 
 #' @rdname binned_manhattan_preprocess
 #' @method binned_manhattan_preprocess MPdata
+#' 
+#' @param bins.x
+#' 
 #' @export
 binned_manhattan_preprocess.MPdata <- function(
-  x, bins_x = 20, bins_y = 100, chr.gap.scaling = 1, 
-  summarise_expression_list = NULL
+    x, bins.x = 20, bins.y = 100, chr.gap.scaling = 1, 
+    summarise_expression_list = NULL
 ) {
   
   # verify summarise_expression_list integrity
@@ -115,7 +90,7 @@ binned_manhattan_preprocess.MPdata <- function(
     check_formula_list(colnames(x$data), summarise_expression_list)
   }
   
-  if (bins_x > 40 || bins_y > 100) {
+  if (bins.x > 40 || bins.y > 100) {
     message("Large number of bins may affect visibility of some variants in the plot.")
   }
   
@@ -124,14 +99,14 @@ binned_manhattan_preprocess.MPdata <- function(
   longest_chr <- which.max(chr_width)
   
   # number of bins to horizontally span each chromosome
-  n_blocks <- ceiling(chr_width / chr_width[longest_chr] * bins_x)
+  n_blocks <- ceiling(chr_width / chr_width[longest_chr] * bins.x)
   
   # calculate horizontal length of a block
   h_length <- unname(chr_width[longest_chr] / n_blocks[longest_chr])
   
   # gets breaks for y and vertical bin length
-  y_breaks <- seq(from = 0, to = ceiling(max(x$data[[x$pval.colname]])), length.out = bins_y)
-  v_length <- ceiling(max(x$data[[x$pval.colname]])) / (bins_y - 1)
+  y_breaks <- seq(from = 0, to = ceiling(max(x$data[[x$pval.colname]])), length.out = bins.y)
+  v_length <- ceiling(max(x$data[[x$pval.colname]])) / (bins.y - 1)
   
   # set block height to end exactly at the significance threshold
   tmp <- round(-log10(x$signif[1]) / v_length)
@@ -148,8 +123,8 @@ binned_manhattan_preprocess.MPdata <- function(
   new_chr_pos_info <- get_chr_pos_info(
     chr_width = n_blocks * h_length,
     chr_gap_scaling = chr.gap.scaling
-    )
-
+  )
+  
   # construct data frame with new positions
   x$data$new_pos_unscaled <- calc_new_pos_(
     x$data$new_pos_unscaled, x$data[[x$chr.colname]], 
@@ -212,4 +187,36 @@ binned_manhattan_preprocess.MPdata <- function(
   class(mpdat_binned) <- c("MPdataBinned")
   
   return(mpdat_binned)
+}
+
+#' @rdname binned_manhattan_preprocess
+#' @method binned_manhattan_preprocess data.frame
+#' @export
+binned_manhattan_preprocess.data.frame <- function(
+    x, bins.x = 20, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+    chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
+    signif.col = NULL, preserve.position = TRUE,
+    pval.log.transform = TRUE, summarise_expression_list = NULL, ...
+) {
+  
+  # verify summarise_expression_list integrity
+  if (!is.null(summarise_expression_list)) {
+    if (!is.list(summarise_expression_list)) {
+      stop("summarise_expression_list should be a list.")
+    }
+    check_formula_list(colnames(x), summarise_expression_list)
+  }
+  
+  mpdat <- manhattan_data_preprocess(
+    x = x, chromosome = NULL, signif = signif, pval.colname = pval.colname,
+    chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = NULL,
+    chr.order = chr.order, signif.col = signif.col, chr.col = NULL, highlight.col = NULL, 
+    preserve.position = preserve.position, pval.log.transform = pval.log.transform, 
+    thin = FALSE, ...
+  )
+  
+  return(binned_manhattan_preprocess(
+    mpdat, bins.x = bins.x, bins.y = bins.y, chr.gap.scaling = chr.gap.scaling,
+    summarise_expression_list = summarise_expression_list)
+  )
 }

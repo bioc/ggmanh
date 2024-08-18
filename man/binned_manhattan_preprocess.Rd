@@ -3,18 +3,26 @@
 \name{binned_manhattan_preprocess}
 \alias{binned_manhattan_preprocess}
 \alias{binned_manhattan_preprocess.default}
-\alias{binned_manhattan_preprocess.data.frame}
 \alias{binned_manhattan_preprocess.MPdata}
+\alias{binned_manhattan_preprocess.data.frame}
 \title{Preprocess GWAS Result for Binned Manhattan Plot}
 \usage{
 binned_manhattan_preprocess(x, ...)
 
 \method{binned_manhattan_preprocess}{default}(x, ...)
 
+\method{binned_manhattan_preprocess}{MPdata}(
+  x,
+  bins.x = 20,
+  bins.y = 100,
+  chr.gap.scaling = 1,
+  summarise_expression_list = NULL
+)
+
 \method{binned_manhattan_preprocess}{data.frame}(
   x,
-  bins_x = 20,
-  bins_y = 100,
+  bins.x = 20,
+  bins.y = 100,
   chr.gap.scaling = 1,
   signif = c(5e-08, 1e-05),
   pval.colname = "pval",
@@ -27,19 +35,37 @@ binned_manhattan_preprocess(x, ...)
   summarise_expression_list = NULL,
   ...
 )
-
-\method{binned_manhattan_preprocess}{MPdata}(
-  x,
-  bins_x = 20,
-  bins_y = 100,
-  chr.gap.scaling = 1,
-  summarise_expression_list = NULL
-)
 }
 \arguments{
-\item{x}{a data frame or any other extension of a data frame. It can also be a \code{MPdata} object.}
+\item{x}{a \code{data frame} or any other extension of a data frame. It can also be a \code{MPdata} object.}
 
 \item{...}{Ignored}
+
+\item{bins.x}{}
+
+\item{chr.gap.scaling}{scaling factor for gap between chromosome if you desire to change it.
+This can also be set in \code{manhattan_plot}}
+
+\item{signif}{a numeric vector. Significant p-value thresholds to be drawn for
+manhattan plot. At least one value should be provided. Default value is c(5e-08, 1e-5)}
+
+\item{pval.colname}{a character. Column name of \code{x} containing p.value.}
+
+\item{chr.colname}{a character. Column name of \code{x} containing chromosome number.}
+
+\item{pos.colname}{a character. Column name of \code{x} containing position.}
+
+\item{chr.order}{a character vector. Order of chromosomes presented in manhattan plot.}
+
+\item{signif.col}{a character vector of equal length as \code{signif}. It contains
+colors for the lines drawn at \code{signif}. If \code{NULL}, the smallest value is colored
+black while others are grey.}
+
+\item{preserve.position}{a logical. If \code{TRUE}, the width of each chromosome reflect the
+number of variants and the position of each variant is correctly scaled? If \code{FALSE}, the
+width of each chromosome is equal and the variants are equally spaced.}
+
+\item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
 }
 \value{
 a MPdataBinned object. This object contains necessary components
@@ -57,10 +83,10 @@ and then builds \code{MPdataBinned} S3 object.
 
 Positions of each point relative to the plot are first calculated
 via \code{\link{manhattan_data_preprocess}}.
-Then the data is binned into blocks. \code{bins_x} indicates number of blocks
+Then the data is binned into blocks. \code{bins.x} indicates number of blocks
 allocated to the chromsome with the widest width. The number of blocks
 for other chromosomes is proportional to the widest chromosome.
-\code{bins_y} indicates the number of blocks allocated to the y-axis.
+\code{bins.y} indicates the number of blocks allocated to the y-axis.
 The number may be slightly adjusted to have the block height end
 exactly at the significance threshold.
 
@@ -92,12 +118,13 @@ gwasdat <- data.frame(
 tmp <- binned_manhattan_preprocess(
   gwasdat, pval.colname = "pvalue", chr.colname = "chromosome",
   pos.colname = "position", chr.order = as.character(1:5),
-  bins_x = 10, bins_y = 50,
+  bins.x = 10, bins.y = 50,
   summarise_expression_list = list(
     mean_beta ~ mean(beta, na.rm = TRUE),
     max_abs_beta ~ max(abs(beta, na.rm = TRUE))
   )
 )
 
+print(tmp)
 
 }
