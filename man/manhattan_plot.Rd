@@ -126,7 +126,7 @@ If \code{signif} is not \code{NULL} and \code{x} is an \code{MPdata} object,
 
 \item{pval.colname}{a character. Column name of \code{x} containing p.value.}
 
-\item{chr.colname}{a character. Column name of \code{x} containing chromosome number.}
+\item{chr.colname}{a character. Column name of \code{x} containing chromosome.}
 
 \item{pos.colname}{a character. Column name of \code{x} containing position.}
 

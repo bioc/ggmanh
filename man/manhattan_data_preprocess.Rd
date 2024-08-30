@@ -65,7 +65,7 @@ manhattan plot. At least one value should be provided. Default value is c(5e-08,
 
 \item{pval.colname}{a character. Column name of \code{x} containing p.value.}
 
-\item{chr.colname}{a character. Column name of \code{x} containing chromosome number.}
+\item{chr.colname}{a character. Column name of \code{x} containing chromosome.}
 
 \item{pos.colname}{a character. Column name of \code{x} containing position.}
 

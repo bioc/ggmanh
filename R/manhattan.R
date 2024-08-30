@@ -67,6 +67,7 @@ manhattan_plot.data.frame <- function(
   color.by.highlight = FALSE,
   preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
+  plot.scale = 1,
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
   x.label = "Chromosome", y.label = expression(-log[10](p)), ...
 ) {
@@ -87,7 +88,7 @@ manhattan_plot.data.frame <- function(
     label.colname = label.colname, x.label = x.label, y.label = y.label,
     point.size = point.size, label.font.size = label.font.size,
     max.overlaps = max.overlaps, plot.title = plot.title, plot.subtitle = plot.subtitle,
-    plot.width = plot.width, plot.height = plot.height, chr.gap.scaling = NULL, ...
+    plot.width = plot.width, plot.height = plot.height, chr.gap.scaling = NULL, plot.scale = plot.scale, ...
   )
 
 }
@@ -125,6 +126,7 @@ manhattan_plot.data.frame <- function(
 #' @param plot.subtitle a character. Plot subtitle
 #' @param plot.width a numeric. Plot width in inches.
 #' @param plot.height a numeric. Plot height in inches.
+#' @param plot.scale a numeric. Plot scale.
 #' @param ... additional arguments to be passed onto \code{geom_label_repel}
 #'
 #' @export
@@ -135,7 +137,7 @@ manhattan_plot.MPdata <- function(
   label.colname = NULL, x.label = "Chromosome", y.label = expression(-log[10](p)),
   point.size = 0.75, label.font.size = 2, max.overlaps = 20,
   plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(),
-  plot.width = 10, plot.height = 5, ...
+  plot.width = 10, plot.height = 5, plot.scale = 1, ...
 ) {
   if (all(!is.null(label.colname), !is.na(label.colname), na.rm = TRUE)) {
     if (!(label.colname %in% colnames(x$data))) stop("label.colname not a valid column name for the data.")
@@ -263,7 +265,7 @@ manhattan_plot.MPdata <- function(
   }
 
   if (!is.null(outfn)) {
-    ggplot2::ggsave(outfn, plot=p, width=plot.width, height=plot.height, units = "in")
+    ggplot2::ggsave(outfn, plot=p, width=plot.width, height=plot.height, scale = plot.scale, units = "in")
     invisible()
   } else {
     return(p)
@@ -283,6 +285,7 @@ setMethod(
     rescale = TRUE, rescale.ratio.threshold = 5, signif.rel.pos = 0.2, chr.gap.scaling = 1, color.by.highlight = FALSE,
     preserve.position = FALSE, thin = NULL, thin.n = 1000, thin.bins = 200, pval.log.transform = TRUE,
     plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(), plot.width = 10, plot.height = 5,
+    plot.scale = 1,
     point.size = 0.75, label.font.size = 2, max.overlaps = 20,
     x.label = "Chromosome", y.label = expression(-log[10](p)), ...
   ) {
@@ -298,12 +301,12 @@ setMethod(
 
     # manhattan plot
     manhattan_plot(
-      x = mpdata, chromosome = chromosome,outfn = outfn, rescale = rescale, rescale.ratio.threshold = rescale.ratio.threshold,
+      x = mpdata, chromosome = chromosome, outfn = outfn, rescale = rescale, rescale.ratio.threshold = rescale.ratio.threshold,
       signif.rel.pos = signif.rel.pos, color.by.highlight = color.by.highlight,
       label.colname = label.colname, x.label = x.label, y.label = y.label,
       point.size = point.size, label.font.size = label.font.size,
       max.overlaps = max.overlaps, plot.title = plot.title, plot.subtitle = plot.subtitle,
-      plot.width = plot.width, plot.height = plot.height, chr.gap.scaling = NULL, ...
+      plot.width = plot.width, plot.height = plot.height, chr.gap.scaling = NULL, plot.scale = plot.scale, ...
     )
 
   }

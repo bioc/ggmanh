@@ -1,10 +1,51 @@
-#' Preprocess GWAS Result for Binned Manhattan Plot
+#' Plot Binned Manhattan Plot
 #' 
+#' Contrary to the traditional manhattan plot, which plots all the points, the 
+#' binned manhattan plot vertically and horizontally bins the variants into blocks.
+#' This speeds up plotting and reduces clutter in the case of high number of variants.
+#' The colors of the blocks can also be used to summarise the variants within each
+#' block and highlight certain features.
+#' 
+#' @details
+#' Similar to \code{manhattan_plot}, this function accepts summary statistics from GWAS and plots manhattan plot.
+#' The difference is that the variants are binned. 
+#' The number of blocks can be controlled by \code{bins.x} and \code{bins.y}.
+#' The blocks can be colored based on a column in the data frame.
+#' 
+#' Palette for coloring the bins can be chosen from the package \href{https://emilhvitfeldt.github.io/paletteer/}{\code{paletteer}}.
+#' Only palettes available in \code{paletteer} are supported. Furthermore, what palette you can use depends on what kind of 
+#' variable you are using to fill the bins. Use discrete palette for categorical variable and continuous palette for continuous variable.
+#' 
+#' @param x a \code{data.frame} or any other extension of a data frame. It can also be a \code{MPdata} object.
+#' @param ... Ignored
+#' @inheritParams manhattan_plot
+#' 
+#' @rdname binned_manhattan_plot
 #' @export
 binned_manhattan_plot <- function(x, ...) UseMethod("binned_manhattan_plot")
 
+#' @rdname binned_manhattan_plot
+#' @method binned_manhattan_plot default
+#' @export
+binned_manhattan_plot.default <- function(x, ...) stop("Provide a valid a valid data.frame, MPdataBinned object, or GRanges object to plot.")
+
 #' Preprocess GWAS Result for Binned Manhattan Plot
 #' 
+#' @param signif.lwd a number. Line width of the significance threshold line.
+#' @param bin.outline a logical. Outline each bin. The bins are colored black.
+#' @param bin.outline.alpha a number. Alpha value of the bin outline.
+#' @param highlight.counts a logical. If logical, the bins are colored based on the number of points in each block.
+#' @param bin.palette a character. Palette to color the bins. Only palettes supported by the package \code{paletteer} are supported. More in details.
+#' @param bin.alpha a number. Alpha value of the bins.
+#' @param palette.direction a number. Direction of the palette. 1 for increasing and -1 for decreasing.
+#' @param nonsignif.default a character. Default color for bins that are not significant.
+#' @param show.legend a logical. Show legend if bins are colored based on a variable.
+#' @param legend.title a character. Title of the legend.
+#' @param background.col a character. Color of the background panels. Set to \code{NULL} for no color.
+#' @param background.alpha a number. Alpha value of the background panels.
+#' 
+#' @rdname binned_manhattan_plot
+#' @method binned_manhattan_plot MPdataBinned
 #' @export
 binned_manhattan_plot.MPdataBinned <- function(
   # data
@@ -22,7 +63,7 @@ binned_manhattan_plot.MPdataBinned <- function(
   bin.palette = "viridis::plasma",
   bin.alpha = 0.9,
   palette.direction = 1,
-  nonsignif_default = NULL,
+  nonsignif.default = NULL,
   show.legend = TRUE,
   legend.title = NULL,
   # background
@@ -32,14 +73,44 @@ binned_manhattan_plot.MPdataBinned <- function(
   plot.title = ggplot2::waiver(),
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10, plot.height = 5, 
+  plot.scale = 1,
   ...
 ) {
+  
+  if (!is.numeric(signif.lwd) | length(signif.lwd) != 1) {
+    warning("Invalid signif.lwd value. Setting to 1.")
+    signif.lwd <- 1
+  }
   
   # check if each block should be outlined
   if (bin.outline) {
     bin.outline <- bin.outline
   } else {
     bin.outline <- NULL
+  }
+  
+  if (!is.numeric(bin.outline.alpha) | length(bin.outline.alpha) != 1) {
+    warning("Invalid bin.outline.alpha value. Setting to 0.2.")
+    bin.outline.alpha <- 0.2
+  } else if (bin.outline.alpha < 0 | bin.outline.alpha > 1) {
+    warning("Invalid bin.outline.alpha value. Setting to 0.2.")
+    bin.outline.alpha <- 0.2
+  }
+  
+  if (!is.numeric(palette.direction) | length(palette.direction) != 1) {
+    warning("Invalid palette.direction value. Setting to 1.")
+    palette.direction <- 1
+  } else if (palette.direction <= 0) {
+    palette.direction <- -1
+  } else {
+    palette.direction <- 1
+  }
+  
+  if (!is.null(nonsignif.default)) {
+    if (length(nonsignif.default) != 1) {
+      warning("nonsignif.default should be a single value. Ignoring this argument")
+      nonsignif.default <- NULL
+    }
   }
   
   # check if legend is displayed
@@ -87,10 +158,10 @@ binned_manhattan_plot.MPdataBinned <- function(
       )
     }
     
-    if (!is.null(nonsignif_default)) {
+    if (!is.null(nonsignif.default)) {
       x$data[[highlight.colname]] <- ifelse(
         x$data$.ymax <= -log10(x$signif[1]),
-        nonsignif_default,
+        nonsignif.default,
         x$data[[highlight.colname]]
       )
     }
@@ -172,9 +243,97 @@ binned_manhattan_plot.MPdataBinned <- function(
     scale_color_manual(values = alpha("black", bin.outline.alpha), guide = "none")
   
   if (!is.null(outfn)) {
-    ggplot2::ggsave(outfn, plot=p, width=plot.width, height=plot.height, units = "in")
+    ggplot2::ggsave(outfn, plot=p, width=plot.width, height=plot.height, units = "in", scale=plot.scale)
     invisible()
   } else {
     return(p)
   }
 }
+
+#' @rdname binned_manhattan_plot
+#' @method binned_manhattan_plot data.frame
+#' @export
+binned_manhattan_plot.data.frame <- function(
+  x, 
+  
+  # preprocess arguments
+  bins.x = 10, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+  chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
+  signif.col = NULL, preserve.position = TRUE,
+  pval.log.transform = TRUE, summarise.expression.list = NULL,
+  
+  # plotting arguments
+  outfn = NULL, signif.lwd = 1, bin.outline = FALSE, bin.outline.alpha = 0.2,
+  highlight.colname = NULL, highlight.counts = TRUE, bin.palette = "viridis::plasma",
+  bin.alpha = 0.9, palette.direction = 1,
+  nonsignif.default = NULL, show.legend = TRUE, legend.title = NULL,
+  background.col = c("grey90", "white"), background.alpha = 0.7,
+  plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(),
+  plot.width = 10, plot.height = 5, plot.scale = 1, ...
+) {
+  
+  mpdat <- binned_manhattan_preprocess(
+    x = x, bins.x = bins.x , bins.y = bins.y, chr.gap.scaling = chr.gap.scaling,
+    signif = signif, pval.colname = pval.colname, chr.colname = chr.colname,
+    pos.colname = pos.colname, chr.order = chr.order, signif.col = signif.col,
+    preserve.position = preserve.position, pval.log.transform = pval.log.transform,
+    summarise.expression.list = summarise.expression.list, show.message = FALSE
+  )
+  
+  p <- binned_manhattan_plot.MPdataBinned(
+    x = mpdat, outfn = outfn, signif.lwd = signif.lwd, bin.outline = bin.outline,
+    bin.outline.alpha = bin.outline.alpha, highlight.colname = highlight.colname,
+    highlight.counts = highlight.counts, bin.palette = bin.palette, bin.alpha = bin.alpha,
+    palette.direction = palette.direction, nonsignif.default = nonsignif.default,
+    show.legend = show.legend, legend.title = legend.title, background.col = background.col,
+    background.alpha = background.alpha, plot.title = plot.title, plot.subtitle = plot.subtitle,
+    plot.width = plot.width, plot.height = plot.height, plot.scale = plot.scale, ...
+  )
+  
+  return(p)
+}
+
+#' @rdname binned_manhattan_plot
+#' @method binned_manhattan_plot GRanges
+#' @export
+setMethod(
+  "binned_manhattan_plot", signature = "GRanges",
+  function(
+    x, 
+    
+    # preprocess arguments
+    bins.x = 10, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+    chr.order = NULL,
+    signif.col = NULL, preserve.position = TRUE,
+    pval.log.transform = TRUE, summarise.expression.list = NULL,
+    
+    # plotting arguments
+    outfn = NULL, signif.lwd = 1, bin.outline = FALSE, bin.outline.alpha = 0.2,
+    highlight.colname = NULL, highlight.counts = TRUE, bin.palette = "viridis::plasma",
+    bin.alpha = 0.9, palette.direction = 1,
+    nonsignif.default = NULL, show.legend = TRUE, legend.title = NULL,
+    background.col = c("grey90", "white"), background.alpha = 0.7,
+    plot.title = ggplot2::waiver(), plot.subtitle = ggplot2::waiver(),
+    plot.width = 10, plot.height = 5, plot.scale = 1, ...
+    
+  ) {
+    mpdat <- binned_manhattan_preprocess(
+      x, bins.x = bins.x, bins.y = bins.y, chr.gap.scaling = chr.gap.scaling, 
+      signif = signif, pval.colname = pval.colname, chr.order = chr.order,
+      signif.col = signif.col, preserve.position = preserve.position,
+      pval.log.transform = pval.log.transform, summarise.expression.list = summarise.expression.list,
+      show.message = FALSE
+    )
+    
+    p <- binned_manhattan_plot.MPdataBinned(
+      x = mpdat, outfn = outfn, signif.lwd = signif.lwd, bin.outline = bin.outline,
+      bin.outline.alpha = bin.outline.alpha, highlight.colname = highlight.colname,
+      highlight.counts = highlight.counts, bin.palette = bin.palette, bin.alpha = bin.alpha,
+      palette.direction = palette.direction, nonsignif.default = nonsignif.default,
+      show.legend = show.legend, legend.title = legend.title, background.col = background.col,
+      background.alpha = background.alpha, plot.title = plot.title, plot.subtitle = plot.subtitle,
+      plot.width = plot.width, plot.height = plot.height, plot.scale = plot.scale, ...
+    )
+  }
+)
+

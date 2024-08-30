@@ -5,6 +5,7 @@
 \alias{binned_manhattan_preprocess.default}
 \alias{binned_manhattan_preprocess.MPdata}
 \alias{binned_manhattan_preprocess.data.frame}
+\alias{binned_manhattan_preprocess,GRanges-method}
 \title{Preprocess GWAS Result for Binned Manhattan Plot}
 \usage{
 binned_manhattan_preprocess(x, ...)
@@ -16,7 +17,8 @@ binned_manhattan_preprocess(x, ...)
   bins.x = 20,
   bins.y = 100,
   chr.gap.scaling = 1,
-  summarise_expression_list = NULL
+  summarise.expression.list = NULL,
+  show.message = TRUE
 )
 
 \method{binned_manhattan_preprocess}{data.frame}(
@@ -32,26 +34,46 @@ binned_manhattan_preprocess(x, ...)
   signif.col = NULL,
   preserve.position = TRUE,
   pval.log.transform = TRUE,
-  summarise_expression_list = NULL,
+  summarise.expression.list = NULL,
+  ...
+)
+
+\S4method{binned_manhattan_preprocess}{GRanges}(
+  x,
+  bins.x = 20,
+  bins.y = 100,
+  chr.gap.scaling = 1,
+  signif = c(5e-08, 1e-05),
+  pval.colname = "pval",
+  chr.order = NULL,
+  signif.col = NULL,
+  preserve.position = TRUE,
+  pval.log.transform = TRUE,
+  summarise.expression.list = NULL,
   ...
 )
 }
 \arguments{
-\item{x}{a \code{data frame} or any other extension of a data frame. It can also be a \code{MPdata} object.}
+\item{x}{a \code{data.frame} or any other extension of a data frame. It can also be a \code{MPdata} object.}
 
 \item{...}{Ignored}
 
-\item{bins.x}{}
+\item{bins.x}{an integer. number of blocks to horizontally span the longest chromosome}
 
-\item{chr.gap.scaling}{scaling factor for gap between chromosome if you desire to change it.
-This can also be set in \code{manhattan_plot}}
+\item{bins.y}{an integer. number of blocks to vertically span the plot}
+
+\item{chr.gap.scaling}{a number. scaling factor for the gap between chromosomes}
+
+\item{summarise.expression.list}{a list of formulas to summarise data for each bin. Check details for more information.}
+
+\item{show.message}{a logical. Show warning if \code{MPdata} directly used. Set to FALSE to suppress warning.}
 
 \item{signif}{a numeric vector. Significant p-value thresholds to be drawn for
 manhattan plot. At least one value should be provided. Default value is c(5e-08, 1e-5)}
 
 \item{pval.colname}{a character. Column name of \code{x} containing p.value.}
 
-\item{chr.colname}{a character. Column name of \code{x} containing chromosome number.}
+\item{chr.colname}{a character. Column name of \code{x} containing chromosome.}
 
 \item{pos.colname}{a character. Column name of \code{x} containing position.}
 
@@ -68,18 +90,21 @@ width of each chromosome is equal and the variants are equally spaced.}
 \item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
 }
 \value{
-a MPdataBinned object. This object contains necessary components
+a \code{MPdataBinned} object. This object contains necessary components
 for creating a binned manhattan plot.
 }
 \description{
 Preprocess a result from Genome Wide Association Study before creating a
 binned manhattan plot. Works similar to \code{\link{manhattan_data_preprocess}}.
 Returns a \code{MPdataBinned} object. It can be created using a \code{data.frame}
-or a \code{MPdata} object. Go to details to read how to use \code{summarise_expression_list}.
+or a \code{MPdata} object. Go to details to read how to use \code{summarise.expression.list}.
 }
 \details{
 If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
 and then builds \code{MPdataBinned} S3 object.
+
+\code{x} can also be a \code{MPdata} object. Be sure to check if \code{thin} has been applied because this can
+affect what's being aggregated such as number of variables in each bin.
 
 Positions of each point relative to the plot are first calculated
 via \code{\link{manhattan_data_preprocess}}.
@@ -92,15 +117,15 @@ exactly at the significance threshold.
 
 Since points are aggregated into bins, users have the choice
 to freely specify expressions to summarise the data for each bin
-through \code{summarise_expression_list} argument. This argument takes a list of
+through \code{summarise.expression.list} argument. This argument takes a list of
 two-sided formulas, where the left side is the name of the new column and
 the right side is the expression to calculate the column. This expression is
 then passed to \code{\link{dplyr::summarise}}.
 For example, to calculate the mean, min, max of a column named \code{beta} in each bin,
-\code{summarise_expression_list} arument would be
+\code{summarise.expression.list} arument would be
 \preformatted{
 # inside binned_manhattan_preprocess function
-summarise_expression_list = list(
+summarise.expression.list = list(
   mean_beta ~ mean(beta),
   min_beta ~ min(beta),
   max_beta ~ max(beta)
@@ -119,7 +144,7 @@ tmp <- binned_manhattan_preprocess(
   gwasdat, pval.colname = "pvalue", chr.colname = "chromosome",
   pos.colname = "position", chr.order = as.character(1:5),
   bins.x = 10, bins.y = 50,
-  summarise_expression_list = list(
+  summarise.expression.list = list(
     mean_beta ~ mean(beta, na.rm = TRUE),
     max_abs_beta ~ max(abs(beta, na.rm = TRUE))
   )

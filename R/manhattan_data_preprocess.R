@@ -63,7 +63,7 @@ manhattan_data_preprocess.default <- function(x, ...) stop("Provide a valid data
 #' @param signif a numeric vector. Significant p-value thresholds to be drawn for
 #'   manhattan plot. At least one value should be provided. Default value is c(5e-08, 1e-5)
 #' @param pval.colname a character. Column name of \code{x} containing p.value.
-#' @param chr.colname a character. Column name of \code{x} containing chromosome number.
+#' @param chr.colname a character. Column name of \code{x} containing chromosome.
 #' @param pos.colname a character. Column name of \code{x} containing position.
 #' @param chr.order a character vector. Order of chromosomes presented in manhattan plot.
 #' @param signif.col a character vector of equal length as \code{signif}. It contains
@@ -237,7 +237,7 @@ setMethod(
       grdat, chromosome = chromosome, signif = signif, pval.colname = pval.colname,
       chr.colname = chr.colname, pos.colname = pos.colname, highlight.colname = highlight.colname, chr.order = chr.order,
       signif.col = signif.col, chr.col = chr.col, highlight.col = highlight.col, preserve.position = preserve.position, thin = thin,
-      thin.n = thin.n, chr.gap.scaling = 1, ...
+      pval.log.transform = pval.log.transform, thin.n = thin.n, chr.gap.scaling = 1, ...
     )
   }
 )

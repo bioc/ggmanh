@@ -3,14 +3,19 @@
 #' Preprocess a result from Genome Wide Association Study before creating a
 #' binned manhattan plot. Works similar to \code{\link{manhattan_data_preprocess}}.
 #' Returns a \code{MPdataBinned} object. It can be created using a \code{data.frame}
-#' or a \code{MPdata} object. Go to details to read how to use \code{summarise_expression_list}.
+#' or a \code{MPdata} object. Go to details to read how to use \code{summarise.expression.list}.
 #' 
-#' @param x a \code{data frame} or any other extension of a data frame. It can also be a \code{MPdata} object.
+#' @param x a \code{data.frame} or any other extension of a data frame. It can also be a \code{MPdata} object.
 #' @param ... Ignored
 #' @inheritParams manhattan_data_preprocess
 #' 
-#' @details If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
+#' @details
+#' 
+#' If \code{x} is a data frame or something alike, then it creates a \code{MPdata} object first
 #' and then builds \code{MPdataBinned} S3 object.
+#' 
+#' \code{x} can also be a \code{MPdata} object. Be sure to check if \code{thin} has been applied because this can
+#' affect what's being aggregated such as number of variables in each bin.
 #'
 #' Positions of each point relative to the plot are first calculated 
 #' via \code{\link{manhattan_data_preprocess}}.
@@ -23,22 +28,22 @@
 #'
 #' Since points are aggregated into bins, users have the choice
 #' to freely specify expressions to summarise the data for each bin
-#' through \code{summarise_expression_list} argument. This argument takes a list of 
+#' through \code{summarise.expression.list} argument. This argument takes a list of 
 #' two-sided formulas, where the left side is the name of the new column and 
 #' the right side is the expression to calculate the column. This expression is 
 #' then passed to \code{\link{dplyr::summarise}}.
 #' For example, to calculate the mean, min, max of a column named \code{beta} in each bin,
-#' \code{summarise_expression_list} arument would be 
+#' \code{summarise.expression.list} arument would be 
 #' \preformatted{
 #' # inside binned_manhattan_preprocess function
-#' summarise_expression_list = list(
+#' summarise.expression.list = list(
 #'   mean_beta ~ mean(beta),
 #'   min_beta ~ min(beta),
 #'   max_beta ~ max(beta)
 #' )
 #' }
 #' 
-#' @returns a MPdataBinned object. This object contains necessary components 
+#' @returns a \code{MPdataBinned} object. This object contains necessary components 
 #' for creating a binned manhattan plot.
 #' 
 #' @examples
@@ -53,7 +58,7 @@
 #'   gwasdat, pval.colname = "pvalue", chr.colname = "chromosome",
 #'   pos.colname = "position", chr.order = as.character(1:5),
 #'   bins.x = 10, bins.y = 50,
-#'   summarise_expression_list = list(
+#'   summarise.expression.list = list(
 #'     mean_beta ~ mean(beta, na.rm = TRUE),
 #'     max_abs_beta ~ max(abs(beta, na.rm = TRUE))
 #'   )
@@ -74,24 +79,55 @@ binned_manhattan_preprocess.default <- function(x, ...) stop("Provide a valid da
 #' @rdname binned_manhattan_preprocess
 #' @method binned_manhattan_preprocess MPdata
 #' 
-#' @param bins.x
+#' @param bins.x an integer. number of blocks to horizontally span the longest chromosome
+#' @param bins.y an integer. number of blocks to vertically span the plot
+#' @param chr.gap.scaling a number. scaling factor for the gap between chromosomes
+#' @param summarise.expression.list a list of formulas to summarise data for each bin. Check details for more information.
+#' @param show.message a logical. Show warning if \code{MPdata} directly used. Set to FALSE to suppress warning.
 #' 
 #' @export
 binned_manhattan_preprocess.MPdata <- function(
-    x, bins.x = 20, bins.y = 100, chr.gap.scaling = 1, 
-    summarise_expression_list = NULL
+    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 1, 
+    summarise.expression.list = NULL, show.message = TRUE
 ) {
   
-  # verify summarise_expression_list integrity
-  if (!is.null(summarise_expression_list)) {
-    if (!is.list(summarise_expression_list)) {
-      stop("summarise_expression_list should be a list.")
+  # check arguments
+  if (!is.numeric(bins.x)) {
+    stop("bins.x should be a number.")
+  }
+  if (!is.numeric(bins.y)) {
+    stop("bins.y should be a number.")
+  }
+  if (!is.numeric(chr.gap.scaling)) {
+    stop("chr.gap.scaling should be a number.")
+  }
+  
+  if (length(bins.x) != 1) {
+    stop("bins.x should be a single number.")
+  }
+  if (length(bins.y) != 1) {
+    stop("bins.y should be a single number.")
+  }
+  if (length(chr.gap.scaling) != 1) {
+    stop("chr.gap.scaling should be a single number.")
+  }
+  
+  # verify summarise.expression.list integrity
+  if (!is.null(summarise.expression.list)) {
+    if (!is.list(summarise.expression.list)) {
+      stop("summarise.expression.list should be a list.")
     }
-    check_formula_list(colnames(x$data), summarise_expression_list)
+    check_formula_list(colnames(x$data), summarise.expression.list)
   }
   
   if (bins.x > 40 || bins.y > 100) {
     message("Large number of bins may affect visibility of some variants in the plot.")
+  }
+  
+  # show warning if MPdata directly used. can be suppressed with show.message
+  if (show.message) {
+    message("MPdata object is directly used. Please make sure that \"thin\" has not been applied to 
+            the object for accurate calcuation.")
   }
   
   # calculate the lengths of chromosome
@@ -146,16 +182,16 @@ binned_manhattan_preprocess.MPdata <- function(
     dplyr::group_by(.data[[x$chr.colname]], .nth_bin_x, .nth_bin_y)
   
   # calculate summary for each bin 
-  if (is.null(summarise_expression_list)) {
-    summarise_expression_list <- list()
+  if (is.null(summarise.expression.list)) {
+    summarise.expression.list <- list()
   }
   
-  summarise_expression_list <- append(
-    list(.n_points ~ n()),
-    summarise_expression_list
+  summarise.expression.list <- append(
+    list(.n_points ~ dplyr::n()),
+    summarise.expression.list
   )
   
-  new_data <- summarise_with_list(new_data, summarise_expression_list)
+  new_data <- summarise_with_list(new_data, summarise.expression.list)
   
   bin_info <- list(
     n_blocks = n_blocks, # number of blocks (horizontally) for each chromosome
@@ -193,18 +229,18 @@ binned_manhattan_preprocess.MPdata <- function(
 #' @method binned_manhattan_preprocess data.frame
 #' @export
 binned_manhattan_preprocess.data.frame <- function(
-    x, bins.x = 20, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
     chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
     signif.col = NULL, preserve.position = TRUE,
-    pval.log.transform = TRUE, summarise_expression_list = NULL, ...
+    pval.log.transform = TRUE, summarise.expression.list = NULL, ...
 ) {
   
-  # verify summarise_expression_list integrity
-  if (!is.null(summarise_expression_list)) {
-    if (!is.list(summarise_expression_list)) {
-      stop("summarise_expression_list should be a list.")
+  # verify summarise.expression.list integrity
+  if (!is.null(summarise.expression.list)) {
+    if (!is.list(summarise.expression.list)) {
+      stop("summarise.expression.list should be a list.")
     }
-    check_formula_list(colnames(x), summarise_expression_list)
+    check_formula_list(colnames(x), summarise.expression.list)
   }
   
   mpdat <- manhattan_data_preprocess(
@@ -217,6 +253,35 @@ binned_manhattan_preprocess.data.frame <- function(
   
   return(binned_manhattan_preprocess(
     mpdat, bins.x = bins.x, bins.y = bins.y, chr.gap.scaling = chr.gap.scaling,
-    summarise_expression_list = summarise_expression_list)
+    summarise.expression.list = summarise.expression.list, show.message = FALSE)
   )
 }
+
+#' @rdname binned_manhattan_preprocess
+#' @method binned_manhattan_preprocess GRanges
+#' @export
+setMethod(
+  "binned_manhattan_preprocess", signature = "GRanges",
+  function(
+    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 1, 
+    signif = c(5e-8, 1e-5), pval.colname = "pval", chr.order = NULL,
+    signif.col = NULL, preserve.position = TRUE,
+    pval.log.transform = TRUE, summarise.expression.list = NULL,
+    ...
+  ) {
+    grdat <- as.data.frame(x)
+    grdat$pos <- (grdat$start + grdat$end) %/% 2
+    
+    chr.colname <- "seqnames"
+    pos.colname <- "pos"
+    
+    binned_manhattan_preprocess.data.frame(
+      grdat, bins.x = bins.x, bins.y = bins.y, signif = signif, pval.colname = pval.colname,
+      chr.colname = chr.colname, pos.colname = pos.colname, chr.order = chr.order,
+      signif.col = signif.col, highlight.col = highlight.col, preserve.position = preserve.position,
+      pval.log.transform = pval.log.transform, thin = FALSE,
+      chr.gap.scaling = chr.gap.scaling, summarise.expression.list = summarise.expression.list,
+      show.message = FALSE, ...
+    )
+  }
+)
