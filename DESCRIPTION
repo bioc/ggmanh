@@ -24,7 +24,8 @@ Imports:
     scales,
     SeqArray (>= 1.32.0),
     stats,
-    tidyr
+    tidyr,
+    dplyr
 Depends:
     methods,
     ggplot2
