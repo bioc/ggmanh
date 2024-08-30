@@ -32,12 +32,13 @@ binned_manhattan_plot(x, ...)
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
   plot.height = 5,
+  plot.scale = 1,
   ...
 )
 
 \method{binned_manhattan_plot}{data.frame}(
   x,
-  bins.x = 20,
+  bins.x = 10,
   bins.y = 100,
   chr.gap.scaling = 1,
   signif = c(5e-08, 1e-05),
@@ -67,12 +68,13 @@ binned_manhattan_plot(x, ...)
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
   plot.height = 5,
+  plot.scale = 1,
   ...
 )
 
 \S4method{binned_manhattan_plot}{GRanges}(
   x,
-  bins.x = 20,
+  bins.x = 10,
   bins.y = 100,
   chr.gap.scaling = 1,
   signif = c(5e-08, 1e-05),
@@ -100,6 +102,7 @@ binned_manhattan_plot(x, ...)
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
   plot.height = 5,
+  plot.scale = 1,
   ...
 )
 }
@@ -145,9 +148,11 @@ Ignored if \code{NULL}.}
 
 \item{plot.subtitle}{a character. Plot subtitle}
 
-\item{plot.width}{a numeric. Plot width in inches.}
+\item{plot.width}{a numeric. Plot width in inches. Corresponds to \code{width} argument in \code{ggsave} function.}
 
-\item{plot.height}{a numeric. Plot height in inches.}
+\item{plot.height}{a numeric. Plot height in inches. Corresponds to \code{height} argument in \code{ggsave} function.}
+
+\item{plot.scale}{a numeric. Plot scale. Corresponds to \code{scale} argument in \code{ggsave} function.}
 
 \item{chr.gap.scaling}{a numeric. scaling factor for gap between chromosome if you desire to change it
 if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.}

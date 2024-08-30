@@ -116,7 +116,7 @@ manhattan_plot.data.frame <- function(
 #' if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.
 #' @param color.by.highlight a logical. Should the points be colored based on a highlight column?
 #' @param label.colname a character. Name of the column in \code{MPdata$data}
-#'   to be used for labelling.
+#'   to be used for labeling.
 #' @param x.label a character. x-axis label
 #' @param y.label a character. y-axis label
 #' @param point.size a numeric. Size of the points.
@@ -124,9 +124,9 @@ manhattan_plot.data.frame <- function(
 #' @param max.overlaps an integer. Exclude text labels that overlaps too many things.
 #' @param plot.title a character. Plot title
 #' @param plot.subtitle a character. Plot subtitle
-#' @param plot.width a numeric. Plot width in inches.
-#' @param plot.height a numeric. Plot height in inches.
-#' @param plot.scale a numeric. Plot scale.
+#' @param plot.width a numeric. Plot width in inches. Corresponds to `width` argument in `ggsave` function.
+#' @param plot.height a numeric. Plot height in inches. Corresponds to `height` argument in `ggsave` function.
+#' @param plot.scale a numeric. Plot scale. Corresponds to `scale` argument in `ggsave` function.
 #' @param ... additional arguments to be passed onto \code{geom_label_repel}
 #'
 #' @export

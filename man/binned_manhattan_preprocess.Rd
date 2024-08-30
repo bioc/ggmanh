@@ -14,7 +14,7 @@ binned_manhattan_preprocess(x, ...)
 
 \method{binned_manhattan_preprocess}{MPdata}(
   x,
-  bins.x = 20,
+  bins.x = 10,
   bins.y = 100,
   chr.gap.scaling = 1,
   summarise.expression.list = NULL,
@@ -23,7 +23,7 @@ binned_manhattan_preprocess(x, ...)
 
 \method{binned_manhattan_preprocess}{data.frame}(
   x,
-  bins.x = 20,
+  bins.x = 10,
   bins.y = 100,
   chr.gap.scaling = 1,
   signif = c(5e-08, 1e-05),
@@ -40,7 +40,7 @@ binned_manhattan_preprocess(x, ...)
 
 \S4method{binned_manhattan_preprocess}{GRanges}(
   x,
-  bins.x = 20,
+  bins.x = 10,
   bins.y = 100,
   chr.gap.scaling = 1,
   signif = c(5e-08, 1e-05),

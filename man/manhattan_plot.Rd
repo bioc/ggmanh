@@ -40,6 +40,7 @@ manhattan_plot.default(x, ...)
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
   plot.height = 5,
+  plot.scale = 1,
   point.size = 0.75,
   label.font.size = 2,
   max.overlaps = 20,
@@ -69,6 +70,7 @@ manhattan_plot.default(x, ...)
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
   plot.height = 5,
+  plot.scale = 1,
   ...
 )
 
@@ -98,6 +100,7 @@ manhattan_plot.default(x, ...)
   plot.subtitle = ggplot2::waiver(),
   plot.width = 10,
   plot.height = 5,
+  plot.scale = 1,
   point.size = 0.75,
   label.font.size = 2,
   max.overlaps = 20,
@@ -131,7 +134,7 @@ If \code{signif} is not \code{NULL} and \code{x} is an \code{MPdata} object,
 \item{pos.colname}{a character. Column name of \code{x} containing position.}
 
 \item{label.colname}{a character. Name of the column in \code{MPdata$data}
-to be used for labelling.}
+to be used for labeling.}
 
 \item{highlight.colname}{a character. If you desire to color certain points
 (e.g. significant variants) rather than color by chromosome, you can specify the
@@ -183,9 +186,11 @@ Defaults to 1000.}
 
 \item{plot.subtitle}{a character. Plot subtitle}
 
-\item{plot.width}{a numeric. Plot width in inches.}
+\item{plot.width}{a numeric. Plot width in inches. Corresponds to \code{width} argument in \code{ggsave} function.}
 
-\item{plot.height}{a numeric. Plot height in inches.}
+\item{plot.height}{a numeric. Plot height in inches. Corresponds to \code{height} argument in \code{ggsave} function.}
+
+\item{plot.scale}{a numeric. Plot scale. Corresponds to \code{scale} argument in \code{ggsave} function.}
 
 \item{point.size}{a numeric. Size of the points.}
 
