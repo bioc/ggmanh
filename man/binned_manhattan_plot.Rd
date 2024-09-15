@@ -40,7 +40,7 @@ binned_manhattan_plot(x, ...)
   x,
   bins.x = 10,
   bins.y = 100,
-  chr.gap.scaling = 1,
+  chr.gap.scaling = 0.4,
   signif = c(5e-08, 1e-05),
   pval.colname = "pval",
   chr.colname = "chr",
@@ -76,7 +76,7 @@ binned_manhattan_plot(x, ...)
   x,
   bins.x = 10,
   bins.y = 100,
-  chr.gap.scaling = 1,
+  chr.gap.scaling = 0.4,
   signif = c(5e-08, 1e-05),
   pval.colname = "pval",
   chr.order = NULL,
@@ -154,6 +154,10 @@ Ignored if \code{NULL}.}
 
 \item{plot.scale}{a numeric. Plot scale. Corresponds to \code{scale} argument in \code{ggsave} function.}
 
+\item{bins.x}{an integer. number of blocks to horizontally span the longest chromosome}
+
+\item{bins.y}{an integer. number of blocks to vertically span the plot}
+
 \item{chr.gap.scaling}{a numeric. scaling factor for gap between chromosome if you desire to change it
 if x is an \code{MPdata} object, then the gap will scale relative to the gap in the object.}
 
@@ -180,6 +184,8 @@ number of variants and the position of each variant is correctly scaled? If \cod
 width of each chromosome is equal and the variants are equally spaced.}
 
 \item{pval.log.transform}{a logical. If \code{TRUE}, the p-value will be transformed to -log10(p-value).}
+
+\item{summarise.expression.list}{a list of formulas to summarise data for each bin. Check details for more information.}
 }
 \description{
 Contrary to the traditional manhattan plot, which plots all the points, the

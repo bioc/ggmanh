@@ -31,7 +31,7 @@
 #' through \code{summarise.expression.list} argument. This argument takes a list of 
 #' two-sided formulas, where the left side is the name of the new column and 
 #' the right side is the expression to calculate the column. This expression is 
-#' then passed to \code{\link{dplyr::summarise}}.
+#' then passed to \code{\link[dplyr]{summarise}}.
 #' For example, to calculate the mean, min, max of a column named \code{beta} in each bin,
 #' \code{summarise.expression.list} arument would be 
 #' \preformatted{
@@ -60,7 +60,7 @@
 #'   bins.x = 10, bins.y = 50,
 #'   summarise.expression.list = list(
 #'     mean_beta ~ mean(beta, na.rm = TRUE),
-#'     max_abs_beta ~ max(abs(beta, na.rm = TRUE))
+#'     max_abs_beta ~ max(abs(beta), na.rm = TRUE)
 #'   )
 #' )
 #' 
@@ -86,9 +86,11 @@ binned_manhattan_preprocess.default <- function(x, ...) stop("Provide a valid da
 #' @param show.message a logical. Show warning if \code{MPdata} directly used. Set to FALSE to suppress warning.
 #' 
 #' @export
+#' @importFrom rlang .data
 binned_manhattan_preprocess.MPdata <- function(
-    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 1, 
-    summarise.expression.list = NULL, show.message = TRUE
+    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 0.4, 
+    summarise.expression.list = NULL, show.message = TRUE,
+    ...
 ) {
   
   # check arguments
@@ -120,7 +122,7 @@ binned_manhattan_preprocess.MPdata <- function(
     check_formula_list(colnames(x$data), summarise.expression.list)
   }
   
-  if (bins.x > 40 || bins.y > 100) {
+  if (bins.x > 30 || bins.y > 100) {
     message("Large number of bins may affect visibility of some variants in the plot.")
   }
   
@@ -166,18 +168,20 @@ binned_manhattan_preprocess.MPdata <- function(
     x$data$new_pos_unscaled, x$data[[x$chr.colname]], 
     new_chr_pos_info, reposition = FALSE)
   
-  new_data <- x$data |>
+  .nth_bin_x <- .nth_bin_y <- NULL
+  
+  new_data <- x$data %>%
     # determine which bin each observation falls under
     dplyr::mutate(
       .nth_bin_x = cut(
-        new_pos_unscaled, breaks = seq(0, max(new_pos_unscaled), by = h_length),
+        .data$new_pos_unscaled, breaks = seq(0, max(.data$new_pos_unscaled), by = h_length),
         labels = FALSE, include.lowest = TRUE
       ),
       .nth_bin_y = cut(
         .data[[x$pval.colname]], breaks = y_breaks,
         labels = FALSE, include.lowest = TRUE
       )
-    ) |>
+    ) %>%
     # group by chromosome, x bin, and y bin
     dplyr::group_by(.data[[x$chr.colname]], .nth_bin_x, .nth_bin_y)
   
@@ -200,8 +204,11 @@ binned_manhattan_preprocess.MPdata <- function(
     v_length = v_length # height of each block
   )
   
+  # need to set following variables to NULL to avoid "NOTE" in R CMD check
+  .xmin <- .xmax <- .ymin <- .ymax <- NULL
+  
   # calculate xmin, xmax, ymin, ymax for each block for geom_rect
-  new_data <- new_data |>
+  new_data <- new_data %>%
     dplyr::mutate(
       .xmin = new_chr_pos_info$start_pos[as.character(.data[[x$chr.colname]])] + 
         bin_info$h_length * (.nth_bin_x-1),
@@ -229,7 +236,7 @@ binned_manhattan_preprocess.MPdata <- function(
 #' @method binned_manhattan_preprocess data.frame
 #' @export
 binned_manhattan_preprocess.data.frame <- function(
-    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 0.4, signif = c(5e-8, 1e-5), pval.colname = "pval",
     chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
     signif.col = NULL, preserve.position = TRUE,
     pval.log.transform = TRUE, summarise.expression.list = NULL, ...
@@ -251,9 +258,11 @@ binned_manhattan_preprocess.data.frame <- function(
     thin = FALSE, ...
   )
   
-  return(binned_manhattan_preprocess(
-    mpdat, bins.x = bins.x, bins.y = bins.y, chr.gap.scaling = chr.gap.scaling,
-    summarise.expression.list = summarise.expression.list, show.message = FALSE)
+  return(
+    binned_manhattan_preprocess.MPdata(
+      mpdat, bins.x = bins.x, bins.y = bins.y, chr.gap.scaling = chr.gap.scaling,
+      summarise.expression.list = summarise.expression.list, show.message = FALSE
+    )
   )
 }
 
@@ -263,7 +272,7 @@ binned_manhattan_preprocess.data.frame <- function(
 setMethod(
   "binned_manhattan_preprocess", signature = "GRanges",
   function(
-    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 1, 
+    x, bins.x = 10, bins.y = 100, chr.gap.scaling = 0.4, 
     signif = c(5e-8, 1e-5), pval.colname = "pval", chr.order = NULL,
     signif.col = NULL, preserve.position = TRUE,
     pval.log.transform = TRUE, summarise.expression.list = NULL,
@@ -278,10 +287,10 @@ setMethod(
     binned_manhattan_preprocess.data.frame(
       grdat, bins.x = bins.x, bins.y = bins.y, signif = signif, pval.colname = pval.colname,
       chr.colname = chr.colname, pos.colname = pos.colname, chr.order = chr.order,
-      signif.col = signif.col, highlight.col = highlight.col, preserve.position = preserve.position,
+      signif.col = signif.col, preserve.position = preserve.position,
       pval.log.transform = pval.log.transform, thin = FALSE,
       chr.gap.scaling = chr.gap.scaling, summarise.expression.list = summarise.expression.list,
-      show.message = FALSE, ...
+      ...
     )
   }
 )

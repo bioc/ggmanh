@@ -19,6 +19,7 @@
 #' @param x a \code{data.frame} or any other extension of a data frame. It can also be a \code{MPdata} object.
 #' @param ... Ignored
 #' @inheritParams manhattan_plot
+#' @inheritParams binned_manhattan_preprocess
 #' 
 #' @rdname binned_manhattan_plot
 #' @export
@@ -179,9 +180,13 @@ binned_manhattan_plot.MPdataBinned <- function(
     
   }
   
+  # define following variables to avoid "NOTE" in R CMD check
+  .xmin <- .xmax <- .ymin <- .ymax <- NULL
+  xmin <- xmax <- ymin <- ymax <- NULL
+  
   # ggplot block layer
   if (!is.null(highlight.colname) | highlight.counts) {
-    manh_geom <- ggplot2::geom_rect(aes(
+    manh_geom <- ggplot2::geom_rect(ggplot2::aes(
       xmin = .xmin,
       xmax = .xmax,
       ymin = .ymin,
@@ -190,7 +195,7 @@ binned_manhattan_plot.MPdataBinned <- function(
       color = bin.outline
     ), alpha = bin.alpha)
   } else {
-    manh_geom <- ggplot2::geom_rect(aes(
+    manh_geom <- ggplot2::geom_rect(ggplot2::aes(
       xmin = .xmin,
       xmax = .xmax,
       ymin = .ymin,
@@ -214,9 +219,16 @@ binned_manhattan_plot.MPdataBinned <- function(
   
   # create final ggplot object
   p <- ggplot2::ggplot(x$data) +
+    
+    # build background
     background_panel_geom +
+    
+    # binned points
     manh_geom +
+    
+    # fill definition
     fill_scale_definition +
+    
     ggplot2::scale_y_continuous(
       expand = c(0.02, 0.01)
     ) +
@@ -224,7 +236,7 @@ binned_manhattan_plot.MPdataBinned <- function(
       name = "Chromosome",
       breaks = x$chr.pos.info$center_pos,
       labels = x$chr.labels,
-      expand = expansion(0.003)
+      expand = ggplot2::expansion(0.003)
     ) +
     ggplot2::geom_hline(
       yintercept = -log10(x$signif),
@@ -240,7 +252,7 @@ binned_manhattan_plot.MPdataBinned <- function(
     ) +
     ggplot2::ylab(expression(-log[10](p))) +
     ggplot2::ggtitle(label = plot.title, subtitle = plot.subtitle) +
-    scale_color_manual(values = alpha("black", bin.outline.alpha), guide = "none")
+    ggplot2::scale_color_manual(values = scales::alpha("black", bin.outline.alpha), guide = "none")
   
   if (!is.null(outfn)) {
     ggplot2::ggsave(outfn, plot=p, width=plot.width, height=plot.height, units = "in", scale=plot.scale)
@@ -257,7 +269,7 @@ binned_manhattan_plot.data.frame <- function(
   x, 
   
   # preprocess arguments
-  bins.x = 10, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+  bins.x = 10, bins.y = 100, chr.gap.scaling = 0.4, signif = c(5e-8, 1e-5), pval.colname = "pval",
   chr.colname = "chr", pos.colname = "pos", chr.order = NULL,
   signif.col = NULL, preserve.position = TRUE,
   pval.log.transform = TRUE, summarise.expression.list = NULL,
@@ -302,7 +314,7 @@ setMethod(
     x, 
     
     # preprocess arguments
-    bins.x = 10, bins.y = 100, chr.gap.scaling = 1, signif = c(5e-8, 1e-5), pval.colname = "pval",
+    bins.x = 10, bins.y = 100, chr.gap.scaling = 0.4, signif = c(5e-8, 1e-5), pval.colname = "pval",
     chr.order = NULL,
     signif.col = NULL, preserve.position = TRUE,
     pval.log.transform = TRUE, summarise.expression.list = NULL,

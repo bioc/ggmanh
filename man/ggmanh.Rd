@@ -2,7 +2,6 @@
 % Please edit documentation in R/ggmanh.R
 \docType{package}
 \name{ggmanh}
-\alias{ggmanh-package}
 \alias{ggmanh}
 \title{ggmanh: A package for visualization of GWAS results.}
 \description{

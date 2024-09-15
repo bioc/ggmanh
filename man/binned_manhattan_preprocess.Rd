@@ -16,16 +16,17 @@ binned_manhattan_preprocess(x, ...)
   x,
   bins.x = 10,
   bins.y = 100,
-  chr.gap.scaling = 1,
+  chr.gap.scaling = 0.4,
   summarise.expression.list = NULL,
-  show.message = TRUE
+  show.message = TRUE,
+  ...
 )
 
 \method{binned_manhattan_preprocess}{data.frame}(
   x,
   bins.x = 10,
   bins.y = 100,
-  chr.gap.scaling = 1,
+  chr.gap.scaling = 0.4,
   signif = c(5e-08, 1e-05),
   pval.colname = "pval",
   chr.colname = "chr",
@@ -42,7 +43,7 @@ binned_manhattan_preprocess(x, ...)
   x,
   bins.x = 10,
   bins.y = 100,
-  chr.gap.scaling = 1,
+  chr.gap.scaling = 0.4,
   signif = c(5e-08, 1e-05),
   pval.colname = "pval",
   chr.order = NULL,
@@ -120,7 +121,7 @@ to freely specify expressions to summarise the data for each bin
 through \code{summarise.expression.list} argument. This argument takes a list of
 two-sided formulas, where the left side is the name of the new column and
 the right side is the expression to calculate the column. This expression is
-then passed to \code{\link{dplyr::summarise}}.
+then passed to \code{\link[dplyr]{summarise}}.
 For example, to calculate the mean, min, max of a column named \code{beta} in each bin,
 \code{summarise.expression.list} arument would be
 \preformatted{
@@ -146,7 +147,7 @@ tmp <- binned_manhattan_preprocess(
   bins.x = 10, bins.y = 50,
   summarise.expression.list = list(
     mean_beta ~ mean(beta, na.rm = TRUE),
-    max_abs_beta ~ max(abs(beta, na.rm = TRUE))
+    max_abs_beta ~ max(abs(beta), na.rm = TRUE)
   )
 )
 
