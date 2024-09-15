@@ -193,8 +193,8 @@ manhattan_plot(simdata, chromosome = 5, pval.colname = "P.value", chr.colname = 
 
 # Binned Manhattan Plot
 
-An alternative to manhattan plot, binned manhattan plot, is also available in this package. 
-The binned manhattan plot can be useful when the number of points is too large, as is the case for GWAS. 
+I created another variant of the manhattan plot, which I call binned manhattan plot.
+The binned manhattan plot can be useful when the number of points is too large, as is usually the case for GWAS. 
 In this plot, the variants are binned into grids, avoiding the need to plot every point. 
 
 ```{r}
@@ -298,6 +298,26 @@ binned_manhattan_plot(
   mpdata, bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
   bin.outline.alpha = 0.3,
   highlight.colname = "max_log10p", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot"
+)
+```
+
+For example, this could be used to have the grid represent the mean, median, min, or max of the effect size (or of the absolute value). However, the values in the variants that are not significant can skew the scale and render the color aesthetic less useful. To deal with this, I've also added `nonsignif.default=` argument, which allows you to set a default value for the non-significant bins (for example, `0` or `NA`).
+
+```{r}
+binned_manhattan_plot(
+  mpdata, bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
+  bin.outline.alpha = 0.3,
+  highlight.colname = "max_log10p", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot",
+  plot.subtitle = "Default nonsignif value = NA",
+  nonsignif.default = NA
+)
+
+binned_manhattan_plot(
+  mpdata, bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
+  bin.outline.alpha = 0.3,
+  highlight.colname = "max_log10p", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot",
+  plot.subtitle = "Default nonsignif value = 0",
+  nonsignif.default = 0
 )
 ```
 
