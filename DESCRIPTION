@@ -1,6 +1,6 @@
 Package: ggmanh
 Title: Visualization Tool for GWAS Result
-Version: 1.9.7
+Version: 1.9.8
 Authors@R: c(
         person(given = "John", family = "Lee", role = c("aut", "cre"), email = "swannyy.stat@gmail.com"),
         person(given = "John", family = "Lee", role = c("aut"), email = "john.lee@abbvie.com", comment = "AbbVie"),
@@ -13,17 +13,21 @@ biocViews: Visualization, GenomeWideAssociation, Genetics
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     gdsfmt,
     ggrepel,
     grDevices,
+    paletteer,
     RColorBrewer,
     rlang,
     scales,
     SeqArray (>= 1.32.0),
     stats,
-    tidyr
+    tidyr,
+    dplyr,
+    pals,
+    magrittr
 Depends:
     methods,
     ggplot2

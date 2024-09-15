@@ -65,7 +65,7 @@ manhattan plot. At least one value should be provided. Default value is c(5e-08,
 
 \item{pval.colname}{a character. Column name of \code{x} containing p.value.}
 
-\item{chr.colname}{a character. Column name of \code{x} containing chromosome number.}
+\item{chr.colname}{a character. Column name of \code{x} containing chromosome.}
 
 \item{pos.colname}{a character. Column name of \code{x} containing position.}
 
@@ -105,15 +105,15 @@ Defaults to 1000.}
 This can also be set in \code{manhattan_plot}}
 }
 \value{
-a MPdata object. This object contains all the necessary info for constructing
-a manhattan plot.
+a MPdata object. This object contains all the necessary components
+for constructing a manhattan plot.
 }
 \description{
 Preprocesses a result from Genome Wide Association Study
 before making a manhattan plot.
 It accepts a \code{data.frame}, which at bare minimum should
 contain a chromosome, position, and p-value.
-Additional options, such as chromosome color, label colum names,
+Additional options, such as chromosome color, label column names,
 and colors for specific variants, are provided here.
 }
 \details{

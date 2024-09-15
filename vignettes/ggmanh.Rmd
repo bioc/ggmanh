@@ -191,6 +191,136 @@ If a value is passed to `chromosome` argument of the function `manhattan_plot` o
 manhattan_plot(simdata, chromosome = 5, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position")
 ```
 
+# Binned Manhattan Plot
+
+I created another variant of the manhattan plot, which I call binned manhattan plot.
+The binned manhattan plot can be useful when the number of points is too large, as is usually the case for GWAS. 
+In this plot, the variants are binned into grids, avoiding the need to plot every point. 
+
+```{r}
+binned_manhattan_plot(simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position")
+```
+
+Number of horizontal and vertical bins can be adjusted.
+
+```{r}
+binned_manhattan_plot(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position", 
+  bins.x = 7, # number of bins for the "widest" chromosome, either calculated by position or by number of variants
+  bins.y = 100, # number of vertical bins
+  show.legend = FALSE, plot.title = "Binned Manhattan Plot"
+)
+```
+
+Just like regular manhattan plot in this package, pre-processing and plotting are split into two stages so that
+you can adjust customize some plotting aspects without having to preprocess over and over again. This is very helpful in 
+this case since pre-processing takes the majority of computation time especially with full summary statistics.
+
+```{r}
+mpdat <- binned_manhattan_preprocess(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position",
+  bins.x = 7, bins.y = 100,
+  chr.gap.scaling = 0.5, # scaling factor for chromo some gap
+  show.message = FALSE # this suppresses some warning messages built into the function
+)
+
+binned_manhattan_plot(mpdat, bin.outline = TRUE)
+```
+
+## Choosing Palettes for Coloring Bins
+
+Different palettes can be chosen for the plot. The default palette is `viridis::plasma`. The user can choose from any of the palettes available in the `paletteer` package.
+More details about which palettes can be used are available [in this link](https://github.com/EmilHvitfeldt/r-color-palettes).
+
+Paletters meant for continuous variables are only compatible with continuous variable used to color the bins. Likewise, palettes meant for discrete variables are only compatible with discrete variables used to color the bins. If continuous palette is used for discrete variable and vice versa, the plot fails.
+
+```{r, error=TRUE}
+# using discrete palette for continuous
+binned_manhattan_plot(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position", 
+  bins.x = 7, bins.y = 100, show.legend = FALSE, plot.title = "Binned Manhattan Plot",
+  bin.palette = "Polychrome::dark", # choose bin palette
+  palette.direction = -1 # set to -1 for reverse palette direction
+)
+```
+
+```{r}
+# using discrete palette for discrete
+binned_manhattan_plot(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position", 
+  highlight.colname = "chromosome", chr.gap.scaling = 0.4,
+  bins.x = 7, bins.y = 100, 
+  show.legend = FALSE, # choose not to show legend
+  plot.title = "Binned Manhattan Plot",
+  bin.palette = "Polychrome::dark", palette.direction = -1
+)
+```
+
+```{r}
+# using continuous palette for continuous variable
+binned_manhattan_plot(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position", 
+  chr.gap.scaling = 0.4,
+  bins.x = 7, bins.y = 100, show.legend = FALSE, plot.title = "Binned Manhattan Plot",
+  bin.palette = "pals::kovesi.isoluminant_cm_70_c39", palette.direction = -1
+)
+```
+
+## Summary Expression
+
+Since variants are binned together, it would also be useful to provide a way to summarize the data within each bin.
+Through `summarise.expression.list`, the user can specify a list of expressions to summarise the data within each bin.
+The list contains formulas, where the left side is the new column name, and the right side is the expression to be passed onto `dplyr::summarise()`.
+
+```{r}
+tmp <- manhattan_data_preprocess(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position"
+)
+
+mpdata <- binned_manhattan_preprocess(
+  simdata, pval.colname = "P.value", chr.colname = "chromosome", pos.colname = "position",
+  bins.x = 7, bins.y = 100, chr.gap.scaling = 0.5,
+  # summary expression list
+  summarise.expression.list = list(
+    max_log10p ~ max(-log10(P.value)), # creates column "min_log10p", which holds the maximum -log10(P.value) among the variants inside the bin
+    signif ~ ifelse(max(P.value) < 5e-8, "Significant", "Not Significant") # creates column "signif" which indicates significance of the bin
+  )
+)
+
+print(head(mpdata$data))
+
+binned_manhattan_plot(
+  mpdata, bin.palette = "Polychrome::dark", bin.alpha = 1, bin.outline = TRUE,
+  highlight.colname = "signif", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot"
+)
+
+binned_manhattan_plot(
+  mpdata, bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
+  bin.outline.alpha = 0.3,
+  highlight.colname = "max_log10p", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot"
+)
+```
+
+For example, this could be used to have the grid represent the mean, median, min, or max of the effect size (or of the absolute value). However, the values in the variants that are not significant can skew the scale and render the color aesthetic less useful. To deal with this, I've also added `nonsignif.default=` argument, which allows you to set a default value for the non-significant bins (for example, `0` or `NA`).
+
+```{r}
+binned_manhattan_plot(
+  mpdata, bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
+  bin.outline.alpha = 0.3,
+  highlight.colname = "max_log10p", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot",
+  plot.subtitle = "Default nonsignif value = NA",
+  nonsignif.default = NA
+)
+
+binned_manhattan_plot(
+  mpdata, bin.palette = "viridis::inferno", bin.alpha = 1, bin.outline = TRUE,
+  bin.outline.alpha = 0.3,
+  highlight.colname = "max_log10p", signif.lwd = 0.5, plot.title = "Binned Manhattan Plot",
+  plot.subtitle = "Default nonsignif value = 0",
+  nonsignif.default = 0
+)
+```
+
 # Annotation with GDS File
 
 The package also comes with a small [GDS file](https://academic.oup.com/bioinformatics/article/33/15/2251/3072873) in a [SeqArray](https://bioconductor.org/packages/release/bioc/html/SeqArray.html) file format that contains chromosome, position, reference / alternate allele, and [Ensembl Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) of highest consequence. We obtained exomic data from the [GnomAD database](https://gnomad.broadinstitute.org/downloads) in VCF format, then converted to GDS file. Finally, some cleaning was done to get this final GDS file. The gds data that comes with this package can be located with this code after installation.
