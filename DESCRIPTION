@@ -1,6 +1,6 @@
 Package: ggmanh
 Title: Visualization Tool for GWAS Result
-Version: 1.9.8
+Version: 1.9.9
 Authors@R: c(
         person(given = "John", family = "Lee", role = c("aut", "cre"), email = "swannyy.stat@gmail.com"),
         person(given = "John", family = "Lee", role = c("aut"), email = "john.lee@abbvie.com", comment = "AbbVie"),
@@ -36,8 +36,6 @@ Suggests:
     rmarkdown,
     knitr,
     testthat (>= 3.0.0),
-    markdown,
-    GenomicRanges,
-    magick
+    GenomicRanges
 Config/testthat/edition: 3
 VignetteBuilder: knitr

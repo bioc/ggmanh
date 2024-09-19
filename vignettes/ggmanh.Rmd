@@ -12,6 +12,10 @@ output:
     toc_float: true
 ---
 
+```{r, echo=FALSE}
+knitr::opts_chunk$set(crop = NULL)
+```
+
 # Introduction
 
 The package `ggmanh` is aimed to provide easy and direct access to visualisation to the GWAS / PWAS results while also providing many functionalities and features. 
@@ -28,7 +32,6 @@ if (!require("BiocManager"))
     install.packages("BiocManager")
 BiocManager::install("ggmanh")
 ```
-
 
 # Functions Overview
 
