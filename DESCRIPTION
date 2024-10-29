@@ -1,6 +1,6 @@
 Package: ggmanh
 Title: Visualization Tool for GWAS Result
-Version: 1.10.0
+Version: 1.11.0
 Authors@R: c(
         person(given = "John", family = "Lee", role = c("aut", "cre"), email = "swannyy.stat@gmail.com"),
         person(given = "John", family = "Lee", role = c("aut"), email = "john.lee@abbvie.com", comment = "AbbVie"),
